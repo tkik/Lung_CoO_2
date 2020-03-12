@@ -1,0 +1,7 @@
+library(workflowr)
+setwd("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/")
+#try(workflowr::wflow_build("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/analysis/heatmaps.Rmd/"))
+#try(workflowr::wflow_build("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/analysis/DMR_report_selected.Rmd/"))
+try(workflowr::wflow_build("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/analysis/DMR_report.Rmd/"))
+try(workflowr::wflow_build("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/analysis/PCA_plots/"))
+#try(workflowr::wflow_build("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/analysis/PCA_plots_selected/"))
