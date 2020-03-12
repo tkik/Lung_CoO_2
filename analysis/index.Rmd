@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "Cell-of-origin in Lung cancer"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
@@ -8,13 +8,46 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Cell-of-origin in Lung cancer. 
+# Data analysis of DNA methylation{.tabset .tabset-fade}
 
-Data analysis of DNA methylation.
+## Reading in and QC
 
-** Data read in ** [LINK](01_read_in_MethylDackel.html)
+**QC analysis based on data from ODCF** [LINK](QC_report.html)
 
-** QC report of the data ** [LINK](../output/QC_report/methrix_reports.html)
+**Data read in** [LINK](01_read_in_MethylDackel.html)
 
-** QC report of the data after SNP removal ** [LINK](../output/QC_report_no_SNP/methrix_reports.html)
+**QC report of the data** [LINK](../output/QC_report/methrix_reports.html)
+
+**QC report of the data after SNP removal** [LINK](../output/QC_report_no_SNP/methrix_reports.html)
+
+## General description of the data
+
+**PCA plots** [LINK](PCA_plots.html)
+
+**Genomic plots for candidate regions** [LINK](candiate_region_plot_histogram.html)
+
+## DMR calling
+
+**Result of the DMR calling** [LINK](DMR_report.html)
+
+**Heatmaps of DMRs** [LINK](heatmaps.html)
+
+**Enrichment analysis of the DMRs** [LINK](DMR_enrichment.html)
+
+## MeDeCom analysis
+
+**Site selection for MeDeCom** [LINK](prepare_medecom_regions.html)
+
+**Site selection for TCA** 
+
+**MeDeCom and TCA run** 
+
+**Candidate plots for the LMCs** 
+
+## Homer motif enrichment analysis
+
+**Data preparation** 
+
+**Homer report** 
+
 
