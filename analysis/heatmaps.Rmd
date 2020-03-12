@@ -1,0 +1,144 @@
+---
+title: "Heatmaps of DMRs"
+author: "Reka Toth"
+date: "2019-10_02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+```{r libraries, echo=TRUE, message=FALSE, warning=FALSE}
+library(methrix)
+library(data.table)
+library(HDF5Array)
+library(SummarizedExperiment)
+library(annotatr)
+library(ggplot2)
+library(rtracklayer)
+library(limma)
+library(knitr)
+library(pheatmap)
+library(ggsci)
+
+
+```
+
+
+# Read in methrix dataset 
+```{r paths, echo=TRUE, message=TRUE, warning=FALSE}
+
+###########libraries and functions#############
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH ="V:/"} else {
+    PATH ="/C010-projects/"}
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH_Y="N:/"} else {
+    PATH_Y="/C010-datasets/"}
+
+DATA = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/data/")
+CODE = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/code/")
+RESULT = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/output/")
+CALLS = paste0(PATH_Y, "External/2018-10-Sotillo/data/methylDackel/")
+
+#source(paste0(PATH, 'Reka/02-PPP/source/modified_rGreat_anno.R'))
+source(file = file.path(CODE, "set_upp_dummy_vars.R"))
+
+Cellpaper <- c("#313695","#4575b4", "#74add1", "#abd9e9","#e0f3f8","#ffffbf","#fee090","#fdae61","#f46d43","#d73027","#a50026")
+
+```
+
+```{r open_results, message=FALSE, warning=FALSE}
+################################################
+
+res <- readRDS(paste0(DATA, "no_snpsXY_methrix.RDS"))
+
+DMRs <- readRDS(file.path(DATA, "DMRs_noMsCCSP_control01_smoothed.RDS"))
+comparisons_all <- names(DMRs)
+
+##remove MsCCSP_control01, because of bad QC values
+
+#res <- methrix::subset_methrix(res, samples = rownames(res@colData)[-which(attr(res@colData, "listData")$full_name=="MsCCSP_control01")])
+#annotation <- read.delim(file=file.path(DATA, "annotation_table_TAGWGBS_02_10.txt"),stringsAsFactors = F)
+
+comparisons <- readRDS(file = file.path(DATA, "comparisons.RDS"))
+
+res <- set_up_dummy_vars(res, comparisons)
+
+```
+
+
+## Heatmap of DMRs{.tabset .tabset-fade .tabset-pills}  
+
+```{r dmr_heatmaps, message=TRUE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+labels <- readRDS(file.path(DATA, "labels.RDS"))
+
+for (comp in comparisons_all) {
+  cat('\n')
+  
+  cat("### Comparisons",
+      paste0(labels[labels$comparisons == comp, 1], " ",
+             labels[labels$comparisons == comp, 2], " vs. ",
+             labels[labels$comparisons == comp, 3]),
+      "\n")
+  
+ mat1 <- as.data.frame(methrix::get_region_summary(res, makeGRangesFromDataFrame(DMRs[[comp]][order(abs(DMRs[[comp]]$diff.Methy), decreasing = T)[1:min(nrow(DMRs[[comp]]), 10000)],])))
+ 
+  
+  plot_mat <- mat1[complete.cases(mat1),-(1:4)]
+  
+  cat("Heatmap with all samples. \n")
+  
+  pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData)[,c("sample_name", "cell_type")], colorRampPalette(Cellpaper, space = "rgb")(10), main = paste0(labels[labels$comparisons == comp, 1], " ",
+             labels[labels$comparisons == comp, 2], " vs. ",
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+   
+  
+  cat("Heatmap with the involved samples only. \n")
+  mat1 <- mat1[,rownames(res@colData)[!is.na(res@colData[,comp])]]
+  plot_mat <- mat1[complete.cases(mat1),]
+
+    
+    pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData[!is.na(res@colData[,comp]),c("sample_name", "cell_type")]), colorRampPalette(Cellpaper, space = "rgb")(10), main = paste0(labels[labels$comparisons == comp, 1], " ",
+             labels[labels$comparisons == comp, 2], " vs. ",
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+     
+    
+    
+}
+
+
+```
+
+## Heatmap of slected samples on DMRs{.tabset .tabset-fade .tabset-pills}  
+
+```{r dmr_heatmaps_sel, message=TRUE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+for (comp in comparisons_all) {
+  cat('\n')
+  
+  cat("### Comparisons",
+      paste0(labels[labels$comparisons == comp, 1], " ",
+             labels[labels$comparisons == comp, 2], " vs. ",
+             labels[labels$comparisons == comp, 3]),
+      "\n")
+  
+ mat1 <- as.data.frame(methrix::get_region_summary(res, makeGRangesFromDataFrame(DMRs[[comp]][order(abs(DMRs[[comp]]$diff.Methy), decreasing = T)[1:min(nrow(DMRs[[comp]]), 10000)],])))
+ 
+ 
+  samples_to_include <- rownames(res@colData)[res@colData$cell_type %in% c("MsSPC", "MsCCSP") & res@colData$sample_name %in% c("control", "tumor")]
+  
+  mat1 <- mat1[,samples_to_include]
+  plot_mat <- mat1[complete.cases(mat1),]
+
+    
+    pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData[samples_to_include,c("sample_name", "cell_type")]), colorRampPalette(Cellpaper, space = "rgb")(10), main = paste0(labels[labels$comparisons == comp, 1], " ",
+             labels[labels$comparisons == comp, 2], " vs. ",
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+     
+    
+    
+}
+
+
+```
