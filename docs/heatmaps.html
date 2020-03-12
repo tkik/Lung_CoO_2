@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Reka Toth" />
+
+
+<title>Heatmaps of DMRs</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CoO_Lung_Cancer</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Heatmaps of DMRs</h1>
+<h4 class="author">Reka Toth</h4>
+<h4 class="date">2019-10_02</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2020-03-12
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>CoO_Lung_Cancer/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20191010code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20191010)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20191010code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20191010)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong73ecdb4"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> 73ecdb4 </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrong73ecdb4" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.Rhistory
+    Ignored:    data/DML_results_MsCCSP_MsSPC_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_MsSPC_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DMLs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/DMRs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/QC_data.RData
+    Ignored:    data/annotation_table_TAGWGBS_02_10.txt
+    Ignored:    data/genotypes_all.txt
+    Ignored:    data/methrix_object.RDS
+    Ignored:    data/no_snps_methrix.RDS
+    Ignored:    data/promoter_beds/
+    Ignored:    data/snp_data_5_strains_14_10.RDS
+    Ignored:    data/snp_ranges.bed
+    Ignored:    data/snp_ranges.bedGraph
+
+Untracked files:
+    Untracked:  analysis/01_read_in_MethylDackel.Rmd
+    Untracked:  analysis/02-DMR_calling.Rmd
+    Untracked:  analysis/DMR_enrichment.Rmd
+    Untracked:  analysis/DMR_report.Rmd
+    Untracked:  analysis/DMR_report_selected.Rmd
+    Untracked:  analysis/Figures.Rmd
+    Untracked:  analysis/LMC_annotation.Rmd
+    Untracked:  analysis/LMC_promoters.Rmd
+    Untracked:  analysis/MeDeCom.Rmd
+    Untracked:  analysis/MeDeCom_MsCCSP.Rmd
+    Untracked:  analysis/MeDeCom_all.Rmd
+    Untracked:  analysis/MeDeCom_all_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/MeDeCom_controls.Rmd
+    Untracked:  analysis/MeDeCom_controls_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/PCA_plots.Rmd
+    Untracked:  analysis/PCA_plots_selected.Rmd
+    Untracked:  analysis/QC_report.Rmd
+    Untracked:  analysis/candiate_region_plot.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram.Rmd
+    Untracked:  analysis/dmr_calling_methrix_17_07_noMsCCSP_control01_smoothed.R
+    Untracked:  analysis/enhancers.rmd
+    Untracked:  analysis/prepare_homer.Rmd
+    Untracked:  analysis/prepare_medecom_regions.Rmd
+    Untracked:  analysis/prepare_promoters_tca.Rmd
+    Untracked:  code/Figure_1.R
+    Untracked:  code/Figure_2.R
+    Untracked:  code/Figure_3.R
+    Untracked:  data/.gitignore
+    Untracked:  data/DML_results_MsCCSP_MsSPC_tumor_comparison.RDS
+    Untracked:  data/MeDeCom_MCCSP_SPC_prepared_filt.rds
+    Untracked:  data/MsCCPS_MsSPC_enhancers.rds
+    Untracked:  data/MsCCPS_MsSPC_promoters.rds
+    Untracked:  data/all_samples_enhancers.rds
+    Untracked:  data/all_samples_promoters.rds
+    Untracked:  data/annotated_regions/
+    Untracked:  data/annotation_table_TAGWGBS_17_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_24_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_31_1.txt
+    Untracked:  data/bivalent_enhancers_plot.pdf
+    Untracked:  data/candidate_genes.txt
+    Untracked:  data/candidate_promoter_methylation.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/candidate_promoter_smoothed_bsseq.RDS
+    Untracked:  data/comparisons.RDS
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt.gz
+    Untracked:  data/enc_epd_enhc_gene_mm10_int.txt
+    Untracked:  data/enhancer_beds/
+    Untracked:  data/enhancers/
+    Untracked:  data/labels.RDS
+    Untracked:  data/medecom/
+    Untracked:  data/medecom_MsCCSP.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_enhancers.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_SPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_promoters.RDS
+    Untracked:  data/medecom_all.RDS
+    Untracked:  data/medecom_all_no_MsCCSP_c4.RDS
+    Untracked:  data/medecom_controls.RDS
+    Untracked:  data/medecom_random_sites.RDS
+    Untracked:  data/medecom_random_sites_all.RDS
+    Untracked:  data/mm9ToMm10.over.chain
+    Untracked:  data/mm9ToMm10.over.chain.gz
+    Untracked:  data/most_variable_in_controls.rds
+    Untracked:  data/no_snpsXY_methrix.RDS
+    Untracked:  data/promoter_bsseq_smoothed.RDS
+    Untracked:  data/promoter_methylation.RDS
+    Untracked:  data/promoter_methylation_smoothed.RDS
+    Untracked:  data/promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/random_sites.rds
+    Untracked:  data/random_sites_all.rds
+    Untracked:  data/removed_sites_MeDeCom.RDS
+    Untracked:  data/removed_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/removed_sites_all_MeDeCom.RDS
+    Untracked:  data/removed_sites_control_MeDeCom.RDS
+    Untracked:  data/selected_sites_MeDeCom.RDS
+    Untracked:  data/selected_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/selected_sites_all_MeDeCom.RDS
+    Untracked:  data/selected_sites_control_MeDeCom.RDS
+    Untracked:  data/sequencing_annotation_table.csv
+    Untracked:  desktop.ini
+    Untracked:  output/QC_report.html
+    Untracked:  output/QC_report/MC_per_chr.tsv
+    Untracked:  output/QC_report/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/contig_lens.tsv
+    Untracked:  output/QC_report/global_MC_per_samp.tsv
+    Untracked:  output/QC_report/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_deprecated/
+    Untracked:  output/QC_report_no_SNPs/MC_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/contig_lens.tsv
+    Untracked:  output/QC_report_no_SNPs/global_MC_per_samp.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs_deprecated/
+    Untracked:  output/annotated_regions/
+    Untracked:  output/candidate_regions_hist/
+    Untracked:  output/candidate_regions_point/
+    Untracked:  output/homer/
+    Untracked:  output/poised_enhancers_all_heatmap.pdf
+    Untracked:  output/poised_enhancers_controls_heatmap.pdf
+    Untracked:  output/tca_res.RDS
+    Untracked:  output/tca_res_candidate_promoters.RDS
+    Untracked:  output/tca_res_promoter_candidate.RDS
+    Untracked:  public/
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+73ecdb4
+</td>
+<td>
+tkike
+</td>
+<td>
+2020-03-12
+</td>
+<td>
+wflow_publish(files = “analysis/heatmaps.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>library(methrix)
+library(data.table)
+library(HDF5Array)
+library(SummarizedExperiment)
+library(annotatr)
+library(ggplot2)
+library(rtracklayer)
+library(limma)
+library(knitr)
+library(pheatmap)
+library(ggsci)</code></pre>
+<div id="read-in-methrix-dataset" class="section level1">
+<h1>Read in methrix dataset</h1>
+<pre class="r"><code>###########libraries and functions#############
+if (grepl(&quot;Windows&quot;, Sys.getenv(&quot;OS&quot;))){
+  PATH =&quot;V:/&quot;} else {
+    PATH =&quot;/C010-projects/&quot;}
+if (grepl(&quot;Windows&quot;, Sys.getenv(&quot;OS&quot;))){
+  PATH_Y=&quot;N:/&quot;} else {
+    PATH_Y=&quot;/C010-datasets/&quot;}
+
+DATA = paste0(PATH, &quot;Reka/33_CoO_lung/CoO_Lung_Cancer/data/&quot;)
+CODE = paste0(PATH, &quot;Reka/33_CoO_lung/CoO_Lung_Cancer/code/&quot;)
+RESULT = paste0(PATH, &quot;Reka/33_CoO_lung/CoO_Lung_Cancer/output/&quot;)
+CALLS = paste0(PATH_Y, &quot;External/2018-10-Sotillo/data/methylDackel/&quot;)
+
+#source(paste0(PATH, &#39;Reka/02-PPP/source/modified_rGreat_anno.R&#39;))
+source(file = file.path(CODE, &quot;set_upp_dummy_vars.R&quot;))
+
+Cellpaper &lt;- c(&quot;#313695&quot;,&quot;#4575b4&quot;, &quot;#74add1&quot;, &quot;#abd9e9&quot;,&quot;#e0f3f8&quot;,&quot;#ffffbf&quot;,&quot;#fee090&quot;,&quot;#fdae61&quot;,&quot;#f46d43&quot;,&quot;#d73027&quot;,&quot;#a50026&quot;)</code></pre>
+<pre class="r"><code>################################################
+
+res &lt;- readRDS(paste0(DATA, &quot;no_snpsXY_methrix.RDS&quot;))
+
+DMRs &lt;- readRDS(file.path(DATA, &quot;DMRs_noMsCCSP_control01_smoothed.RDS&quot;))
+comparisons_all &lt;- names(DMRs)
+
+##remove MsCCSP_control01, because of bad QC values
+
+#res &lt;- methrix::subset_methrix(res, samples = rownames(res@colData)[-which(attr(res@colData, &quot;listData&quot;)$full_name==&quot;MsCCSP_control01&quot;)])
+#annotation &lt;- read.delim(file=file.path(DATA, &quot;annotation_table_TAGWGBS_02_10.txt&quot;),stringsAsFactors = F)
+
+comparisons &lt;- readRDS(file = file.path(DATA, &quot;comparisons.RDS&quot;))
+
+res &lt;- set_up_dummy_vars(res, comparisons)</code></pre>
+<div id="heatmap-of-dmrs" class="section level2 tabset tabset-fade tabset-pills">
+<h2>Heatmap of DMRs</h2>
+<pre class="r"><code>labels &lt;- readRDS(file.path(DATA, &quot;labels.RDS&quot;))
+
+for (comp in comparisons_all) {
+  cat(&#39;\n&#39;)
+  
+  cat(&quot;### Comparisons&quot;,
+      paste0(labels[labels$comparisons == comp, 1], &quot; &quot;,
+             labels[labels$comparisons == comp, 2], &quot; vs. &quot;,
+             labels[labels$comparisons == comp, 3]),
+      &quot;\n&quot;)
+  
+ mat1 &lt;- as.data.frame(methrix::get_region_summary(res, makeGRangesFromDataFrame(DMRs[[comp]][order(abs(DMRs[[comp]]$diff.Methy), decreasing = T)[1:min(nrow(DMRs[[comp]]), 10000)],])))
+ 
+  
+  plot_mat &lt;- mat1[complete.cases(mat1),-(1:4)]
+  
+  cat(&quot;Heatmap with all samples. \n&quot;)
+  
+  pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData)[,c(&quot;sample_name&quot;, &quot;cell_type&quot;)], colorRampPalette(Cellpaper, space = &quot;rgb&quot;)(10), main = paste0(labels[labels$comparisons == comp, 1], &quot; &quot;,
+             labels[labels$comparisons == comp, 2], &quot; vs. &quot;,
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+   
+  
+  cat(&quot;Heatmap with the involved samples only. \n&quot;)
+  mat1 &lt;- mat1[,rownames(res@colData)[!is.na(res@colData[,comp])]]
+  plot_mat &lt;- mat1[complete.cases(mat1),]
+
+    
+    pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData[!is.na(res@colData[,comp]),c(&quot;sample_name&quot;, &quot;cell_type&quot;)]), colorRampPalette(Cellpaper, space = &quot;rgb&quot;)(10), main = paste0(labels[labels$comparisons == comp, 1], &quot; &quot;,
+             labels[labels$comparisons == comp, 2], &quot; vs. &quot;,
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+     
+    
+    
+}</code></pre>
+<div id="comparisons-msccsp-control-vs.-tumor" class="section level3">
+<h3>Comparisons MsCCSP control vs. tumor</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:6.440s elapsed (7.880s cpu)</code></pre>
+<p>Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-1.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msccsp-control-vs.-tumor-rfp" class="section level3">
+<h3>Comparisons MsCCSP control vs. tumor-rfp</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.470s elapsed (7.310s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-2.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-3.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msccsp-tumor-vs.-tumor-rfp" class="section level3">
+<h3>Comparisons MsCCSP tumor vs. tumor-rfp</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.330s elapsed (7.160s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-4.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-5.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msccsp-vs.-msspc" class="section level3">
+<h3>Comparisons MsCCSP vs. MsSPC</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.160s elapsed (6.700s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-6.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-7.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msccsp_control-vs.-msspc_control" class="section level3">
+<h3>Comparisons MsCCSP_control vs. MsSPC_control</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.540s elapsed (7.650s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-8.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-9.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msspc-control-vs.-tumor" class="section level3">
+<h3>Comparisons MsSPC control vs. tumor</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.250s elapsed (6.740s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-10.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-11.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msspc-control-vs.-tumor-rfp" class="section level3">
+<h3>Comparisons MsSPC control vs. tumor-rfp</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.210s elapsed (6.920s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-12.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-13.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msspc-tumor-vs.-tumor-rfp" class="section level3">
+<h3>Comparisons MsSPC tumor vs. tumor-rfp</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:3.970s elapsed (6.420s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-14.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-15.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only.</p>
+</div>
+<div id="comparisons-msccsp_tumor-vs.-msspc_tumor" class="section level3">
+<h3>Comparisons MsCCSP_tumor vs. MsSPC_tumor</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:4.160s elapsed (6.470s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps-16.png" width="672" style="display: block; margin: auto;" />Heatmap with all samples. <img src="figure/heatmaps.Rmd/dmr_heatmaps-17.png" width="672" style="display: block; margin: auto;" />Heatmap with the involved samples only. <img src="figure/heatmaps.Rmd/dmr_heatmaps-18.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="heatmap-of-slected-samples-on-dmrs" class="section level2 tabset tabset-fade tabset-pills">
+<h2>Heatmap of slected samples on DMRs</h2>
+<pre class="r"><code>for (comp in comparisons_all) {
+  cat(&#39;\n&#39;)
+  
+  cat(&quot;### Comparisons&quot;,
+      paste0(labels[labels$comparisons == comp, 1], &quot; &quot;,
+             labels[labels$comparisons == comp, 2], &quot; vs. &quot;,
+             labels[labels$comparisons == comp, 3]),
+      &quot;\n&quot;)
+  
+ mat1 &lt;- as.data.frame(methrix::get_region_summary(res, makeGRangesFromDataFrame(DMRs[[comp]][order(abs(DMRs[[comp]]$diff.Methy), decreasing = T)[1:min(nrow(DMRs[[comp]]), 10000)],])))
+ 
+ 
+  samples_to_include &lt;- rownames(res@colData)[res@colData$cell_type %in% c(&quot;MsSPC&quot;, &quot;MsCCSP&quot;) &amp; res@colData$sample_name %in% c(&quot;control&quot;, &quot;tumor&quot;)]
+  
+  mat1 &lt;- mat1[,samples_to_include]
+  plot_mat &lt;- mat1[complete.cases(mat1),]
+
+    
+    pheatmap::pheatmap(plot_mat, annotation_col = as.data.frame(res@colData[samples_to_include,c(&quot;sample_name&quot;, &quot;cell_type&quot;)]), colorRampPalette(Cellpaper, space = &quot;rgb&quot;)(10), main = paste0(labels[labels$comparisons == comp, 1], &quot; &quot;,
+             labels[labels$comparisons == comp, 2], &quot; vs. &quot;,
+             labels[labels$comparisons == comp, 3]), show_rownames = FALSE)
+     
+    
+    
+}</code></pre>
+<div id="comparisons-msccsp-control-vs.-tumor-1" class="section level3">
+<h3>Comparisons MsCCSP control vs. tumor</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.200s elapsed (6.890s cpu)</code></pre>
+</div>
+<div id="comparisons-msccsp-control-vs.-tumor-rfp-1" class="section level3">
+<h3>Comparisons MsCCSP control vs. tumor-rfp</h3>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.590s elapsed (6.630s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-1.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsCCSP tumor vs. tumor-rfp</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.430s elapsed (6.420s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-2.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsCCSP vs. MsSPC</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.230s elapsed (6.530s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-3.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsCCSP_control vs. MsSPC_control</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.020s elapsed (6.890s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-4.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsSPC control vs. tumor</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.640s elapsed (6.810s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-5.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsSPC control vs. tumor-rfp</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:5.090s elapsed (6.560s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-6.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsSPC tumor vs. tumor-rfp</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:4.000s elapsed (6.080s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-7.png" width="672" style="display: block; margin: auto;" /> ### Comparisons MsCCSP_tumor vs. MsSPC_tumor</p>
+<pre><code>-Checking for overlaps..</code></pre>
+<pre><code>-Summarizing by average</code></pre>
+<pre><code>-Done! Finished in:4.440s elapsed (6.530s cpu)</code></pre>
+<p><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-8.png" width="672" style="display: block; margin: auto;" /><img src="figure/heatmaps.Rmd/dmr_heatmaps_sel-9.png" width="672" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.6.3 (2020-02-29)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 17763)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] ggsci_2.9                   pheatmap_1.0.12            
+ [3] knitr_1.28                  limma_3.42.2               
+ [5] rtracklayer_1.46.0          ggplot2_3.2.1              
+ [7] annotatr_1.12.1             HDF5Array_1.14.3           
+ [9] rhdf5_2.30.1                methrix_1.0.05             
+[11] SummarizedExperiment_1.16.1 DelayedArray_0.12.2        
+[13] BiocParallel_1.20.1         matrixStats_0.55.0         
+[15] Biobase_2.46.0              GenomicRanges_1.38.0       
+[17] GenomeInfoDb_1.22.0         IRanges_2.20.2             
+[19] S4Vectors_0.24.3            BiocGenerics_0.32.0        
+[21] data.table_1.12.8           workflowr_1.6.0            
+
+loaded via a namespace (and not attached):
+ [1] bitops_1.0-6                  fs_1.3.1                     
+ [3] bit64_0.9-7                   RColorBrewer_1.1-2           
+ [5] progress_1.2.2                httr_1.4.1                   
+ [7] rprojroot_1.3-2               tools_3.6.3                  
+ [9] backports_1.1.5               R6_2.4.1                     
+[11] DBI_1.1.0                     lazyeval_0.2.2               
+[13] colorspace_1.4-1              withr_2.1.2                  
+[15] prettyunits_1.1.1             tidyselect_1.0.0             
+[17] bit_1.1-15.2                  curl_4.3                     
+[19] compiler_3.6.3                git2r_0.26.1                 
+[21] scales_1.1.0                  readr_1.3.1                  
+[23] askpass_1.1                   rappdirs_0.3.1               
+[25] stringr_1.4.0                 digest_0.6.25                
+[27] Rsamtools_2.2.3               rmarkdown_2.1                
+[29] XVector_0.26.0                pkgconfig_2.0.3              
+[31] htmltools_0.4.0               regioneR_1.18.1              
+[33] dbplyr_1.4.2                  fastmap_1.0.1                
+[35] BSgenome_1.54.0               rlang_0.4.5                  
+[37] RSQLite_2.2.0                 shiny_1.4.0                  
+[39] DelayedMatrixStats_1.8.0      farver_2.0.3                 
+[41] dplyr_0.8.4                   RCurl_1.98-1.1               
+[43] magrittr_1.5                  GenomeInfoDbData_1.2.2       
+[45] Matrix_1.2-18                 Rcpp_1.0.3                   
+[47] munsell_0.5.0                 Rhdf5lib_1.8.0               
+[49] lifecycle_0.1.0               stringi_1.4.6                
+[51] whisker_0.4                   yaml_2.2.1                   
+[53] zlibbioc_1.32.0               plyr_1.8.5                   
+[55] BiocFileCache_1.10.2          AnnotationHub_2.18.0         
+[57] grid_3.6.3                    blob_1.2.1                   
+[59] promises_1.1.0                crayon_1.3.4                 
+[61] lattice_0.20-38               Biostrings_2.54.0            
+[63] GenomicFeatures_1.38.2        hms_0.5.3                    
+[65] pillar_1.4.3                  rjson_0.2.20                 
+[67] reshape2_1.4.3                biomaRt_2.42.0               
+[69] XML_3.99-0.3                  glue_1.3.1                   
+[71] BiocVersion_3.10.1            evaluate_0.14                
+[73] BiocManager_1.30.10           vctrs_0.2.3                  
+[75] httpuv_1.5.2                  openssl_1.4.1                
+[77] gtable_0.3.0                  purrr_0.3.3                  
+[79] assertthat_0.2.1              xfun_0.12                    
+[81] mime_0.9                      xtable_1.8-4                 
+[83] later_1.0.0                   tibble_2.1.3                 
+[85] GenomicAlignments_1.22.1      AnnotationDbi_1.48.0         
+[87] memoise_1.1.0                 interactiveDisplayBase_1.24.0</code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
