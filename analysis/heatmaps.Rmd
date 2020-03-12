@@ -117,7 +117,7 @@ for (comp in comparisons_all) {
 for (comp in comparisons_all) {
   cat('\n')
   
-  cat("### Comparisons",
+  cat("### Comparisons", 
       paste0(labels[labels$comparisons == comp, 1], " ",
              labels[labels$comparisons == comp, 2], " vs. ",
              labels[labels$comparisons == comp, 3]),
