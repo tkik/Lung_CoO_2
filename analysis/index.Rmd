@@ -1,0 +1,20 @@
+---
+title: "Home"
+site: workflowr::wflow_site
+output:
+  workflowr::wflow_html:
+    toc: false
+editor_options:
+  chunk_output_type: console
+---
+
+# Cell-of-origin in Lung cancer. 
+
+Data analysis of DNA methylation.
+
+** Data read in ** [LINK](01_read_in_MethylDackel.html)
+
+** QC report of the data ** [LINK](../output/QC_report/methrix_reports.html)
+
+** QC report of the data after SNP removal ** [LINK](../output/QC_report_no_SNP/methrix_reports.html)
+
