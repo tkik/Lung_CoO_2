@@ -824,3 +824,34 @@ gseaplot2(geneSetID = c(3:5), color = mypal[1:3],  base_size = 11, rel_heights =
 
 ```
 
+
+
+```{r}
+
+
+#Heatmap all pathways combined
+
+marker_lists_short <- marker_lists_short[-19]
+all_pw <- c(marker_lists_short, selected_markers_MCA_l, new_list)
+
+for (lmcs in list(lmc1_rank, lmc2_rank, lmc3_rank)){
+
+gsdata2 <- do.call(rbind, lapply(1:length(all_pw), function(id) gsInfo2(geneSetID=id, geneset = all_pw, res = lmcs)))
+
+fgseaRes <- fgsea(pathways = all_pw,
+                  stats    = lmcs,
+                  minSize  = 3,
+                  maxSize  = 500, nperm=1000)
+
+gsdata3 <- gsdata2 %>% 
+  inner_join(fgseaRes[,c("pathway", "pval")], by= c("Description"="pathway")) %>% 
+  mutate(significant=ifelse(pval<0.05, " *", NA)) %>%
+  mutate(Description=factor(Description, levels = fgseaRes$pathway[order(fgseaRes$ES, decreasing = T)]))
+  
+p <- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low="darkred", mid="white", high="darkblue")+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+print(p)
+}
+
+```
+
+
