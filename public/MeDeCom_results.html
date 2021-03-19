@@ -546,16 +546,16 @@ data/lung_cell_atlas_other_markers.txt
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree8941cbd83ef4c8d02fd7f0ce195f9119b77849f9targetblank8941cbda"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/8941cbd83ef4c8d02fd7f0ce195f9119b77849f9" target="_blank">8941cbd</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree66d7c9291b13e8515380e609f8c55db3233a689atargetblank66d7c92a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/66d7c9291b13e8515380e609f8c55db3233a689a" target="_blank">66d7c92</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree8941cbd83ef4c8d02fd7f0ce195f9119b77849f9targetblank8941cbda" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree66d7c9291b13e8515380e609f8c55db3233a689atargetblank66d7c92a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/8941cbd83ef4c8d02fd7f0ce195f9119b77849f9" target="_blank">8941cbd</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/66d7c9291b13e8515380e609f8c55db3233a689a" target="_blank">66d7c92</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -565,6 +565,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.Rhistory
+    Ignored:    analysis/figure/
     Ignored:    data/DML_results_MsCCSP_MsSPC_comparison.RDS
     Ignored:    data/DML_results_MsCCSP_MsSPC_control_comparison.RDS
     Ignored:    data/DML_results_MsCCSP_tumor_control_comparison.RDS
@@ -974,6 +975,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://gitlab.com/tkike/Lung_CoO/blob/66d7c9291b13e8515380e609f8c55db3233a689a/analysis/MeDeCom_results.Rmd" target="_blank">66d7c92</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-03-19
+</td>
+<td>
+wflow_publish(c(“analysis/MeDeCom_results.Rmd”, “analysis/figure/MeDeCom_results_noHopx.Rmd”))
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/tkike/Lung_CoO/raw/e6de0f2b3a22821aa8d4f29e23615e560e73e55a/public/MeDeCom_results.html" target="_blank">e6de0f2</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-03-19
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://gitlab.com/tkike/Lung_CoO/blob/8941cbd83ef4c8d02fd7f0ce195f9119b77849f9/analysis/MeDeCom_results.Rmd" target="_blank">8941cbd</a>
 </td>
 <td>
@@ -1042,7 +1077,7 @@ colnames(LMCs) &lt;- paste0(&quot;LMC&quot;, 1:K_sel)
 rownames(annotation) &lt;- colnames(mat[,-(1:3)])
 print(xtable::xtable(annotation), type=&quot;html&quot;)</code></pre>
 <!-- html table generated in R 4.0.3 by xtable 1.8-4 package -->
-<!-- Fri Mar 19 00:53:06 2021 -->
+<!-- Fri Mar 19 15:14:55 2021 -->
 <table border="1">
 <tr>
 <th>
@@ -1532,7 +1567,7 @@ GFP
 <pre class="r"><code>promoter_methylation &lt;- methrix::get_region_summary(res, promoters)</code></pre>
 <pre><code>-Checking for overlaps..</code></pre>
 <pre><code>-Summarizing by average</code></pre>
-<pre><code>-Done! Finished in:35.3s elapsed (34.1s cpu)</code></pre>
+<pre><code>-Done! Finished in:36.0s elapsed (35.3s cpu)</code></pre>
 <pre class="r"><code>promoter_methylation$symbol &lt;- promoters$symbol[promoter_methylation$rid]
 promoter_methylation &lt;- as.data.frame(promoter_methylation)
 
@@ -2162,6 +2197,48 @@ replace the existing scale.</code></pre>
 <pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
 replace the existing scale.</code></pre>
 <p><img src="figure/MeDeCom_results.Rmd/unnamed-chunk-17-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#Heatmap all pathways combined
+
+marker_lists_short &lt;- marker_lists_short[-19]
+all_pw &lt;- c(marker_lists_short, selected_markers_MCA_l, new_list)
+
+for (lmcs in list(lmc1_rank, lmc2_rank, lmc3_rank)){
+
+gsdata2 &lt;- do.call(rbind, lapply(1:length(all_pw), function(id) gsInfo2(geneSetID=id, geneset = all_pw, res = lmcs)))
+
+fgseaRes &lt;- fgsea(pathways = all_pw,
+                  stats    = lmcs,
+                  minSize  = 3,
+                  maxSize  = 500, nperm=1000)
+
+gsdata3 &lt;- gsdata2 %&gt;% 
+  inner_join(fgseaRes[,c(&quot;pathway&quot;, &quot;pval&quot;)], by= c(&quot;Description&quot;=&quot;pathway&quot;)) %&gt;% 
+  mutate(significant=ifelse(pval&lt;0.05, &quot; *&quot;, NA)) %&gt;%
+  mutate(Description=factor(Description, levels = fgseaRes$pathway[order(fgseaRes$ES, decreasing = T)]))
+  
+p &lt;- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low=&quot;darkred&quot;, mid=&quot;white&quot;, high=&quot;darkblue&quot;)+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+print(p)
+}</code></pre>
+<pre><code>Warning in fgsea(pathways = all_pw, stats = lmcs, minSize = 3, maxSize = 500, :
+You are trying to run fgseaSimple. It is recommended to use fgseaMultilevel. To
+run fgseaMultilevel, you need to remove the nperm argument in the fgsea function
+call.</code></pre>
+<pre><code>Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (0.16% of the list).
+The order of those tied genes will be arbitrary, which may produce unexpected results.</code></pre>
+<pre><code>Warning in fgsea(pathways = all_pw, stats = lmcs, minSize = 3, maxSize = 500, :
+You are trying to run fgseaSimple. It is recommended to use fgseaMultilevel. To
+run fgseaMultilevel, you need to remove the nperm argument in the fgsea function
+call.</code></pre>
+<pre><code>Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (0.18% of the list).
+The order of those tied genes will be arbitrary, which may produce unexpected results.</code></pre>
+<p><img src="figure/MeDeCom_results.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Warning in fgsea(pathways = all_pw, stats = lmcs, minSize = 3, maxSize = 500, :
+You are trying to run fgseaSimple. It is recommended to use fgseaMultilevel. To
+run fgseaMultilevel, you need to remove the nperm argument in the fgsea function
+call.</code></pre>
+<pre><code>Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (0.13% of the list).
+The order of those tied genes will be arbitrary, which may produce unexpected results.</code></pre>
+<p><img src="figure/MeDeCom_results.Rmd/unnamed-chunk-18-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/MeDeCom_results.Rmd/unnamed-chunk-18-3.png" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
