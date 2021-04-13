@@ -1,0 +1,427 @@
+---
+title: "DMR report"
+author: "Reka Toth"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r libraries, echo=TRUE, message=FALSE, warning=FALSE}
+library(methrix)
+library(data.table)
+library(HDF5Array)
+library(SummarizedExperiment)
+library(DSS)
+library(karyoploteR)
+library(annotatr)
+library(ggplot2)
+library(rtracklayer)
+library(limma)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ChIPseeker)
+library(UpSetR)
+library(plotly)
+library(ggsci)
+
+```
+
+
+# Read in methrix dataset 
+```{r open_results, echo=TRUE, message=TRUE, warning=FALSE}
+
+###########libraries and functions#############
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH ="V:/"} else {
+    PATH ="/C010-projects/"}
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH_Y="N:/"} else {
+    PATH_Y="/C010-datasets/"}
+
+DATA = paste0(PATH, "/Reka/33_CoO_lung/CoO_Lung_Cancer/data/")
+CODE = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/code/")
+RESULT = paste0(PATH, "/Reka/33_CoO_lung/CoO_Lung_Cancer/output/")
+CALLS = paste0(PATH_Y, "External/2018-10-Sotillo/data/methylDackel/")
+
+#source(paste0(PATH, 'Reka/02-PPP/source/modified_rGreat_anno.R'))
+source(file.path(CODE, "region_annotation_function.R"))
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+##################functions####################
+label_func <- function(x){
+    breaks <- x
+    breaks[breaks==200] <- ">=200"
+    breaks
+}
+
+region_annotation_function_new <- function(comparisons=comparisons_all, gains=gain, losses=loss, annots_gr = annots_gr_orig){
+  
+   #browser()
+   
+for (comp in comparisons){
+#browser()
+ factor_levels <- gsub("mm10_[[:alpha:]]*_", "", unique(annots_gr$type))
+ factor_levels <- factor_levels[order(factor_levels, decreasing = T)]
+   cat('\n')  
+   
+   cat("### Comparisons", paste0(labels[labels$comparisons==comp,1], " ", 
+                            labels[labels$comparisons==comp,2], " vs. ",
+                                labels[labels$comparisons==comp,3]), "\n")
+   
+   
+   
+   p_annots_data <- list()
+   for (dataset in list(gains[[comp]], losses[[comp]])){
+     
+     direction <- ifelse(all(mcols(dataset)$diff.Methy<0), "gain", "loss")
+      
+     result <- annotate_regions(dataset, annotations=annots_gr, minoverlap = 10L, ignore.strand = TRUE, quiet = FALSE)
+      g <- getGenomeAndMask("mm10")$genome
+      g <- filterChromosomes(g, chr.type="canonical", organism="mm10")
+     rnd_annots = annotate_regions(regions = randomizeRegions(rep(dataset, 10), genome = g),annotations = annots_gr,ignore.strand = TRUE)
+
+     p_annots = summarize_annotations(annotated_regions = result, annotated_random = rnd_annots)
+     p_annots_data[[direction]] <- p_annots
+     
+     p_annots_data[[direction]]$annot.type <- gsub("[[:alnum:]]*_", "", p_annots_data[[direction]]$annot.type)
+       
+       p_annots_data[[direction]]$annot.type <-  factor(p_annots_data[[direction]]$annot.type, levels = factor_levels)
+     
+     p_annots_data[[direction]]$direction <- direction
+     
+   }
+   
+   
+    dat <- do.call(rbind.data.frame, p_annots_data)
+    dat <- dat %>% group_by(direction, data_type) %>% mutate(ratio=n/sum(n),sum=sum(n))
+    
+        
+       # browser()
+     ###########ggplot bars ############   
+        g <- ggplot(dat)+
+        geom_col(aes(x=annot.type, y = ratio, fill=data_type), position = "dodge")+ facet_grid(rows = vars(direction))+
+        scale_fill_nejm()+ 
+        theme_light()+
+        theme(legend.position = "bottom", legend.title=element_blank(), axis.text.x = element_text(angle = 45, hjust = 0.8))+
+        xlab("Annotation type")+
+        scale_y_continuous(labels=scales::percent)+
+        ylab("Percentage")+
+        ggtitle(paste0("Distribution of regions with methylation alterantions"))
+        
+        print(g)
+        
+        gain_regions <-  dat$annot.type[dat$direction=="gain"][duplicated(dat$annot.type[dat$direction=="gain"])]
+        loss_regions <-   dat$annot.type[dat$direction=="loss"][duplicated(dat$annot.type[dat$direction=="loss"])]
+        dat <- dat[(dat$direction=="gain" & dat$annot.type %in% gain_regions) | 
+                      (dat$direction=="loss" & dat$annot.type %in% loss_regions),]
+        
+        
+        final <- dat %>% group_by(direction, annot.type) %>% summarise(ratio = log2(ratio[data_type=="Data"]/ratio[data_type=="Random Regions"]), 
+                                                            chi_p = fisher.test(cbind(n, sum))$p.value)
+        
+        final$logp <- -log10(final$chi_p)
+        final$significant <- ifelse(final$chi_p<0.05, "yes", "no")
+        
+        
+          
+   #############ggplot_enrichment##################       
+        g <- ggplot(data = final, aes(y=annot.type, x=direction))+
+    geom_point(aes(size=logp, fill=ratio, color=significant), pch=21)+
+    scale_fill_gradient2( midpoint = 0, low="darkgreen", high="darkred", name = "Fold change")+
+    scale_colour_manual(values=c("grey", "black"), name="Significant")+
+    scale_size(name="Log p", labels = label_func) +
+           theme_bw()+
+    theme(axis.text.x=element_text(size=10, angle = 90), axis.text.y=element_text(size=10))+
+           ylab("Annotation type")+
+    scale_x_discrete(name=NULL)+
+    theme(legend.text=element_text(size=8),  legend.title=element_text(size=9))
+        
+        print(g)
+        
+        cat("\n")
+   }
+
+}
+
+```
+
+```{r}
+################################################
+
+res <- readRDS(paste0(DATA, "no_snpsXY_methrix.RDS"))
+
+
+##remove MsCCSP_control01, because of bad QC values
+
+#res <- methrix::subset_methrix(res, samples = rownames(res@colData)[-which(res@colData$full_name=="MsCCSP_control01")])
+#annotation <- read.delim(file=file.path(DATA, "annotation_table_TAGWGBS_02_10.txt"),stringsAsFactors = F)
+
+
+DMRs <- readRDS(file.path(DATA, "DMRs_new_groups.RDS"))
+DMLs <- readRDS(file.path(DATA, "DMLs_new_groups.RDS"))
+comparisons_all <- names(DMRs)
+
+
+```
+
+
+
+# General statistics  
+  
+## Distribution and overlap of differentially methylated sites
+The upset plot shows the number of differentially methylated sites and their overlap in the different categories. 
+
+```{r upset plot, dev=c('png', 'pdf')}
+
+all_sites <- setDT(as.data.frame(res@elementMetadata))
+all_sites$end <- all_sites$start+2
+setkeyv(all_sites, cols = c("chr", "start", "end"))
+
+for (comp in comparisons_all){
+  
+  colnames(DMLs[[comp]])[1:2] <- c("chr", "start")
+  setDT(DMLs[[comp]])
+  DMLs[[comp]][,end:=start+2]
+  setkeyv(DMLs[[comp]], cols = c("chr", "start", "end"))
+overlapping <- data.table::foverlaps(all_sites, DMLs[[comp]], type = "start", nomatch = NA, which = TRUE, by.x = c("chr", "start", "end"), by.y = c("chr", "start", "end"))$yid
+  all_sites[,comp:=overlapping]
+  all_sites[,eval(comp):=ifelse(is.na(all_sites[,comp]), 0,1)]
+
+  }
+
+all_sites[,comp:=NULL]
+UpSetR::upset(all_sites, sets = comparisons_all)
+```
+
+
+
+## Genome-wide differences{.tabset .tabset-fade .tabset-pills}  
+
+This plot shows a karyogram, with methylation gains marked with red and methylation losses marked with green. Gain means that the second group gained methylation compared to the first. Loss means that it lost methylation.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+
+labels <- readRDS(file.path(DATA, "labels.RDS"))
+#labels <- rbind(labels, data.frame(cell="", first="MsCCCP_tumor", sec="MsSPC_tumor", comparisons="CCSP_tumor"))
+rownames(labels) <- labels$comparisons
+
+labels <- labels[comparisons_all,]
+gain <- list()
+loss <- list()
+
+
+for (comp in comparisons_all){
+
+  gain[[comp]] <- DMRs[[comp]][DMRs[[comp]]$diff.Methy<0,]
+  gain[[comp]]  <- makeGRangesFromDataFrame(gain[[comp]] , keep.extra.columns = T)
+  genome(gain[[comp]] ) <- rep("mm10", length(genome(gain[[comp]] )))
+
+
+  loss[[comp]] <-  DMRs[[comp]][DMRs[[comp]]$diff.Methy>0,]
+  loss[[comp]] <- makeGRangesFromDataFrame(loss[[comp]], keep.extra.columns = T)
+  genome(loss[[comp]]) <- rep("mm10", length(genome(loss[[comp]])))
+  
+   cat('\n')  
+   
+   cat("### Comparisons", paste0(labels[labels$comparisons==comp,1], " ", 
+                            labels[labels$comparisons==comp,2], " vs. ",
+                                labels[labels$comparisons==comp,3]), " \n")      
+   
+    kp <- plotKaryotype(genome = "mm10")
+    kpRect(kp, data= gain[[comp]], col="#FF0000", border="#FF0000", y0=mcols(gain[[comp]])$diff.Methy, y1 = (mcols(gain[[comp]])$diff.Methy-0.1))
+    kpRect(kp, data= loss[[comp]], col="#00FF21", border="#00FF21", y0=mcols(loss[[comp]])$diff.Methy, y1=mcols(loss[[comp]])$diff.Methy-0.1)
+    kpAxis(kp, ymin=-1, ymax=1)
+   cat('\n') 
+}
+
+
+```
+
+
+## Number and distribution of differentially methylated sites
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+
+counts <- vector()
+for (comp in comparisons_all){
+ counts <- c(counts, nrow(DMRs[[comp]][DMRs[[comp]]$diff.Methy<0,])) 
+ counts <- c(counts, nrow(DMRs[[comp]][DMRs[[comp]]$diff.Methy>0,])) 
+}
+length <- vector()
+for (comp in comparisons_all){
+ length <- c(length, sum(DMRs[[comp]][DMRs[[comp]]$diff.Methy<0,"length"])) 
+ length <- c(length, sum(DMRs[[comp]][DMRs[[comp]]$diff.Methy>0,"length"])) 
+}
+
+
+
+data <- data.frame(Comp = rep(paste0(labels[,1], " ", 
+                              labels[,2], " vs. ",
+                              labels[,3]), each=2), Direction=rep(c("Gain", "Loss"), length(comparisons_all)), Count=counts, Length=length)
+
+   g <- ggplot(data=data)+geom_col(aes(x=Comp, y=Count, fill=Direction))+theme_bw()+theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=45, hjust = 1))+scale_fill_brewer(palette = "Dark2")
+ggplotly(g)
+   p <- ggplot(data=data)+geom_col(aes(x=Comp, y=Length, fill=Direction))+theme_bw()+theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=45, hjust = 1))+scale_fill_brewer(palette = "Dark2")
+ggplotly(p)
+   cat('\n') 
+
+```
+
+## Location of the DMRs - distance from TSSs
+
+```{r message=FALSE, warning=FALSE, eval=TRUE}
+## loading packages
+txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene::TxDb.Mmusculus.UCSC.mm10.knownGene
+
+
+
+dmrs_split <- list()
+for (comp in names(DMRs)){
+  
+  dmrs_split[[paste0(comp, "_up")]] <- makeGRangesFromDataFrame(DMRs[[comp]][DMRs[[comp]]$diff.Methy<0,], keep.extra.columns = T)
+  dmrs_split[[paste0(comp, "_down")]] <- makeGRangesFromDataFrame(DMRs[[comp]][DMRs[[comp]]$diff.Methy>0,], keep.extra.columns = T)
+  
+}
+
+peakAnnoList <- lapply(dmrs_split, annotatePeak, TxDb=txdb,
+                       tssRegion=c(-3000, 3000), verbose=FALSE)
+for (i in 1:length(peakAnnoList)) {
+  write.table(as.data.frame(peakAnnoList[[i]]@anno), file=paste0(DATA, paste0("/dmrs/",gsub(" ", "_", names(peakAnnoList)[[i]])), ".txt"), sep="\t", row.names=F, quote = F)
+
+}
+
+plotAnnoBar(peakAnnoList)
+
+
+##Distance from TSS
+
+plotDistToTSS(peakAnnoList,
+              title="Distribution of DMRs\nrelative to TSS")
+
+```
+
+## Genomic region of the differentially methylated regions{.tabset .tabset-fade .tabset-pills}
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+ annots = c('mm10_basicgenes')
+  annots_gr_orig = build_annotations(genome = 'mm10', annotations = annots)
+#annots_gr_orig$type <- gsub("mm10_cpg_", "mm10_cpg-", annots_gr_orig$type, fixed = F)
+
+  
+  region_annotation_function(annots_gr = annots_gr_orig, comparisons = comparisons_all)
+  
+  
+
+```
+
+
+
+## CpG island relation of the differentially methylated regions{.tabset .tabset-fade .tabset-pills}
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis', dev=c('png', 'pdf')}
+
+ annots = c('mm10_cpgs')
+  annots_gr_orig = build_annotations(genome = 'mm10', annotations = annots)
+
+  region_annotation_function(annots_gr = annots_gr_orig, comparisons = comparisons_all)
+
+
+
+```
+
+
+
+## Enhancer relation of the differentially methylated regions{.tabset .tabset-fade .tabset-pills}
+
+
+
+```{r enhancer, echo=FALSE, warning=FALSE, results='asis', message=F, dev=c('png', 'pdf'), eval=F}
+    
+ annots = c('mm10_enhancers_fantom')
+  annots_gr = build_annotations(genome = 'mm10', annotations = annots)
+
+
+for (comp in comparisons_all){
+
+ 
+   cat('\n')  
+   
+   cat("### Comparisons", paste0(labels[labels$comparisons==comp,1], " ", 
+                            labels[labels$comparisons==comp,2], " vs. ",
+                                labels[labels$comparisons==comp,3]), "\n")
+   
+   for (dataset in list(gain[[comp]], loss[[comp]])){
+     
+     tryCatch({
+        result <- annotate_regions(dataset, annotations=annots_gr, minoverlap = 10L, ignore.strand = TRUE, quiet = FALSE)
+
+     rnd_annots = annotate_regions(regions = randomize_regions(regions = dataset),annotations = annots_gr,ignore.strand = TRUE)
+
+     direction <- ifelse(all(mcols(dataset)$diff.Methy<0), "gain", "loss")
+     p_annots = plot_annotation(annotated_regions = result, annotated_random = rnd_annots, plot_title = paste0("Distribution of regions with methylation ", direction))
+
+      g <- ggplot(p_annots$data)+
+        geom_bar(aes(x=annot.type, y = (..count..)/sum(..count..), fill=data_type), position = "dodge")+
+        scale_fill_brewer(palette = "Dark2")+
+        theme_light()+
+        theme(legend.position = "bottom", legend.title=element_blank())+
+        xlab("Annotation type")+
+        scale_y_continuous(labels=scales::percent)+
+        ylab("Percentage")+
+        ggtitle(paste0("Distribution of regions with methylation ", direction))
+ 
+      
+      
+    ggplotly(g)
+        cat('\n') 
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+     
+   }
+
+
+}
+
+```
+
+
+
+## ChromHMM relation of the differentially methylated regions, postnatal, 0 days{.tabset .tabset-fade .tabset-pills}
+
+The ChromHMM data is from mouse lung, embrionic, postnatal 0 days. 
+
+```{r chromhmm, echo=FALSE, message=F, warning=FALSE, results='asis', dev=c('png', 'pdf'), eval=T}
+
+ #annots = c('mm10_enhancers_fantom')
+
+  annots_gr_0 = import.bed(con=paste0(PATH_Y, "/External/2018-10-Sotillo/data/chromhmm/lung_0_mm10_15_posterior.bed"), extraCols = c(Type="character", First="numeric", Second="character", Position1="integer", Position2="integer", Color="character"))
+
+#annots_gr_0 = import.bed(con=paste0(DATA, "lung_0_mm10_15_posterior.bed"), extraCols = c(Type="character", First="numeric", Second="character", Position1="integer", Position2="integer", Color="character"))
+
+mcols(annots_gr_0) <- mcols(annots_gr_0)[,"Type", drop=F]
+mcols(annots_gr_0)$id <- paste0("ChromHMM_0_postnatal:", 1:nrow(mcols(annots_gr_0)))
+mcols(annots_gr_0)$tx_id <- NA
+mcols(annots_gr_0)$gene_id <- NA
+mcols(annots_gr_0)$symbol <- NA
+colnames(mcols(annots_gr_0))[1] <- "type"
+mcols(annots_gr_0) <- mcols(annots_gr_0)[,c("id", "tx_id", "gene_id", "symbol", "type")]
+mcols(annots_gr_0)$type <- paste0("mm10_custom_",  mcols(annots_gr_0)$type)
+
+  region_annotation_function(annots_gr = annots_gr_0, comparisons = comparisons_all)
+
+  cat("\n")
+
+```
+
