@@ -1,0 +1,6441 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Reka Toth" />
+
+
+<title>Motif enrichment analysis on enhancer DMRs</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-sm-12 col-md-4 col-lg-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-sm-12 col-md-8 col-lg-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CoO_Lung_Cancer</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://gitlab.com/tkike/Lung_CoO">
+    <span class="fas fa-gitlab"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Motif enrichment analysis on enhancer DMRs</h1>
+<h4 class="author">Reka Toth</h4>
+<h4 class="date">13 April, 2021</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-04-13
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>CoO_Lung_Cancer/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2.9000). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20191010code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20191010)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20191010code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20191010)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree69414764f023db912cf03730582d08997538a55dtargetblank6941476a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/69414764f023db912cf03730582d08997538a55d" target="_blank">6941476</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree69414764f023db912cf03730582d08997538a55dtargetblank6941476a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/69414764f023db912cf03730582d08997538a55d" target="_blank">6941476</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.Rhistory
+    Ignored:    data/DML_results_MsCCSP_MsSPC_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_MsSPC_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DMLs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/DMRs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/QC_data.RData
+    Ignored:    data/annotation_table_TAGWGBS_02_10.txt
+    Ignored:    data/genotypes_all.txt
+    Ignored:    data/methrix_object.RDS
+    Ignored:    data/no_snps_methrix.RDS
+    Ignored:    data/promoter_beds/
+    Ignored:    data/snp_data_5_strains_14_10.RDS
+    Ignored:    data/snp_ranges.bed
+    Ignored:    data/snp_ranges.bedGraph
+    Ignored:    docs/01_read_in_MethylDackel.html
+    Ignored:    docs/02-DMR_calling.html
+    Ignored:    docs/DMR_report.html
+    Ignored:    docs/PCA_plots.html
+    Ignored:    docs/QC_report.html
+    Ignored:    docs/about.html
+    Ignored:    docs/index.html
+    Ignored:    docs/license.html
+    Ignored:    docs/methrix_reports.html
+    Ignored:    docs/site_libs/jqueryui-1.11.4/index.html
+    Ignored:    enrichment_new_groups/
+
+Untracked files:
+    Untracked:  analysis/02-DMR_calling.Rmd
+    Untracked:  analysis/DMR_enrichment.Rmd
+    Untracked:  analysis/DMR_report.Rmd
+    Untracked:  analysis/DMR_report_selected.Rmd
+    Untracked:  analysis/Figures.Rmd
+    Untracked:  analysis/LMC_annotation.Rmd
+    Untracked:  analysis/LMC_based_enhancer_enrichment.R
+    Untracked:  analysis/LMC_promoters.Rmd
+    Untracked:  analysis/MeDeCom.Rmd
+    Untracked:  analysis/MeDeCom_MsCCSP.Rmd
+    Untracked:  analysis/MeDeCom_all.Rmd
+    Untracked:  analysis/MeDeCom_all_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/MeDeCom_controls.Rmd
+    Untracked:  analysis/MeDeCom_controls_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/MeDeCom_poised_enhancers.Rmd
+    Untracked:  analysis/PCA_plots.Rmd
+    Untracked:  analysis/PCA_plots_selected.Rmd
+    Untracked:  analysis/QC_report.Rmd
+    Untracked:  analysis/cNMF.Rmd
+    Untracked:  analysis/candiate_region_plot.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram_new_groups.Rmd
+    Untracked:  analysis/candidate_selection.Rmd
+    Untracked:  analysis/combined_candidate_plots.Rmd
+    Untracked:  analysis/combined_differential.Rmd
+    Untracked:  analysis/combined_enhancer_plots.Rmd
+    Untracked:  analysis/dmr_calling_methrix_17_07_noMsCCSP_control01_smoothed.R
+    Untracked:  analysis/enhancers.rmd
+    Untracked:  analysis/go_region_plot_histogram.Rmd
+    Untracked:  analysis/homer_all.Rmd
+    Untracked:  analysis/homer_enhancers.Rmd
+    Untracked:  analysis/prepare_homer.Rmd
+    Untracked:  analysis/prepare_homer_alldmr.Rmd
+    Untracked:  analysis/prepare_homer_alldmr_new.Rmd
+    Untracked:  analysis/prepare_medecom_regions.Rmd
+    Untracked:  analysis/prepare_promoters_tca.Rmd
+    Untracked:  analysis/tcga_medecom.Rmd
+    Untracked:  code/EpiScore.R
+    Untracked:  code/Figure_1.R
+    Untracked:  code/Figure_2.R
+    Untracked:  code/Figure_3.R
+    Untracked:  code/LMC_correlation_enrichment.R
+    Untracked:  code/LMC_enrichment.R
+    Untracked:  code/color_palette.R
+    Untracked:  code/gviz_region_plot_figures.R
+    Untracked:  code/medecom_poised_enhancers_all.R
+    Untracked:  code/medecom_poised_enhancers_all_hopx.R
+    Untracked:  code/medecom_poised_enhancers_all_hopx_no1.R
+    Untracked:  code/medecom_poised_enhancers_all_norfp.R
+    Untracked:  code/medecom_poised_enhancers_all_smoothed.R
+    Untracked:  code/presentation_heatmap.R
+    Untracked:  code/shiny_app/
+    Untracked:  code/tcga_medecom_corr.R
+    Untracked:  code/tcga_medecom_correlation.RData
+    Untracked:  code/tcga_shiny.R
+    Untracked:  data/.gitignore
+    Untracked:  data/AU040972cand.pdf
+    Untracked:  data/CD74cand.pdf
+    Untracked:  data/Cyp2f2cand.pdf
+    Untracked:  data/DML_results_MsCCSP_MsSPC_tumor_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_MsSPC_control_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_MsSPC_tumor_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_tumor_control_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsSPC_tumor_control_comparison.RDS
+    Untracked:  data/DMLs_new_groups.RDS
+    Untracked:  data/DMRs_new_groups.RDS
+    Untracked:  data/E-ENAD-15-marker-genes-files_Mouse_cell_atlas.zip
+    Untracked:  data/E-ENAD-15.marker_genes_inferred_cell_type_-_ontology_labels.tsv
+    Untracked:  data/ENCODE_SCREEN_lung_postnatal_0_CRE.7group.bed
+    Untracked:  data/ENdb_target_gene.txt
+    Untracked:  data/FactorViz_outputs.zip
+    Untracked:  data/FactorViz_outputs/
+    Untracked:  data/Frem1cand.pdf
+    Untracked:  data/Fukazawa_2016_Sox2_targets.xlsx
+    Untracked:  data/Itih4cand.pdf
+    Untracked:  data/Itih4cand_data.RDS
+    Untracked:  data/JASPAR_2020_matrix_clustering_vertebrates_archive.zip
+    Untracked:  data/Krt19cand.pdf
+    Untracked:  data/MeDeCom_MCCSP_SPC_prepared_filt.rds
+    Untracked:  data/MsCCPS_MsSPC_enhancers.rds
+    Untracked:  data/MsCCPS_MsSPC_promoters.rds
+    Untracked:  data/MsCCSP_MsSPC_tumor_different_genes.txt
+    Untracked:  data/MsCCSP_tumor_MsCCSP_normal_different_genes.txt
+    Untracked:  data/MsSPC_normal_MsCCSP_normal_different_genes.txt
+    Untracked:  data/MsSPC_tumor_MsCCSP_tumor_different_genes.txt
+    Untracked:  data/MsSPC_tumor_MsSPC_normal_different_genes.txt
+    Untracked:  data/Nkx2-1cand.pdf
+    Untracked:  data/Nr2f2cand.pdf
+    Untracked:  data/Scgb1a1cand.pdf
+    Untracked:  data/Scgb1a1cand_data.RDS
+    Untracked:  data/Scgb3a2cand.pdf
+    Untracked:  data/Scgb3a2cand_data.RDS
+    Untracked:  data/Sftpccand.pdf
+    Untracked:  data/Sftpccand_data.RDS
+    Untracked:  data/Sox2_target.tsv
+    Untracked:  data/Sox2cand.pdf
+    Untracked:  data/Sox2cand_data.RDS
+    Untracked:  data/all_Ts.RDS
+    Untracked:  data/all_metascape report.zip
+    Untracked:  data/all_samples_enhancers.rds
+    Untracked:  data/all_samples_promoters.rds
+    Untracked:  data/annotated_regions/
+    Untracked:  data/annotation_table_TAGWGBS_16_2_2021.txt
+    Untracked:  data/annotation_table_TAGWGBS_17_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_24_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_31_1.txt
+    Untracked:  data/bedgraphs/
+    Untracked:  data/beds/
+    Untracked:  data/beds_new_groups/
+    Untracked:  data/bivalent_enhancers_plot.pdf
+    Untracked:  data/candidate_genes.txt
+    Untracked:  data/candidate_promoter_methylation.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/candidate_promoter_smoothed_bsseq.RDS
+    Untracked:  data/cell_type_markers.gmt
+    Untracked:  data/cellphonedb_example_data.zip
+    Untracked:  data/comparisons.RDS
+    Untracked:  data/dmrs/
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt.gz
+    Untracked:  data/enc_epd_enhc_gene_mm10_int.txt
+    Untracked:  data/enhancer_beds/
+    Untracked:  data/enhancers/
+    Untracked:  data/enhancers_CCSP_genes.txt
+    Untracked:  data/enhancers_LMC1_genes.txt
+    Untracked:  data/enhancers_LMC2_genes.txt
+    Untracked:  data/enhancers_LMC3_genes.txt
+    Untracked:  data/enhancers_LMC4_genes.txt
+    Untracked:  data/enhancers_genes.RDS
+    Untracked:  data/enhancers_genes.txt
+    Untracked:  data/enhancers_genes.xlsx
+    Untracked:  data/enhancers_genes_nobg.txt
+    Untracked:  data/enhancers_genes_nobg.xlsx
+    Untracked:  data/figures/
+    Untracked:  data/ge_dmr_candidates.rds
+    Untracked:  data/homer_res/
+    Untracked:  data/homer_res_new_groups/
+    Untracked:  data/human_lung_cell_atlas_all_markers.txt
+    Untracked:  data/interactive_trees/
+    Untracked:  data/labels.RDS
+    Untracked:  data/linked_promoter_TSS.xlsx
+    Untracked:  data/lung_cell_atlas_other_markers.txt
+    Untracked:  data/medecom/
+    Untracked:  data/medecom_MsCCSP.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_enhancers.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_SPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_promoters.RDS
+    Untracked:  data/medecom_all.RDS
+    Untracked:  data/medecom_all_no_MsCCSP_c4.RDS
+    Untracked:  data/medecom_controls.RDS
+    Untracked:  data/medecom_proportions_all.RDS
+    Untracked:  data/medecom_proportions_all_HOPX.RDS
+    Untracked:  data/medecom_random_sites.RDS
+    Untracked:  data/medecom_random_sites_all.RDS
+    Untracked:  data/metascape_result.tju3krgk_.xlsx
+    Untracked:  data/mm9ToMm10.over.chain
+    Untracked:  data/mm9ToMm10.over.chain.gz
+    Untracked:  data/most_variable_in_controls.rds
+    Untracked:  data/new_tumor_groups.RDS
+    Untracked:  data/new_tumor_groups_HOPX.RDS
+    Untracked:  data/nkx2_1_enrichment/
+    Untracked:  data/no_snpsXY_methrix.RDS
+    Untracked:  data/no_snps_methrix.qs
+    Untracked:  data/promoter_bsseq_smoothed.RDS
+    Untracked:  data/promoter_methylation.RDS
+    Untracked:  data/promoter_methylation_smoothed.RDS
+    Untracked:  data/promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/random_sites.rds
+    Untracked:  data/random_sites_all.rds
+    Untracked:  data/removed_sites_MeDeCom.RDS
+    Untracked:  data/removed_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/removed_sites_all_MeDeCom.RDS
+    Untracked:  data/removed_sites_control_MeDeCom.RDS
+    Untracked:  data/selected_markers_MCA.txt
+    Untracked:  data/selected_sites_MeDeCom.RDS
+    Untracked:  data/selected_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/selected_sites_all_MeDeCom.RDS
+    Untracked:  data/selected_sites_control_MeDeCom.RDS
+    Untracked:  data/sequencing_annotation_table.csv
+    Untracked:  data/target_genes_nkx2-1.txt
+    Untracked:  data/target_genes_nkx2-1.xlsx
+    Untracked:  data/tcga_laml_ge.RDS
+    Untracked:  data/tcga_luad_ge.RDS
+    Untracked:  data/tcga_medecom_corr_LMC1.tiff
+    Untracked:  data/tcga_medecom_corr_LMC2.tiff
+    Untracked:  data/tcga_medecom_corr_LMC3.tiff
+    Untracked:  data/tcga_medecom_corr_LMC4.tiff
+    Untracked:  data/tcga_medecom_corr_LMC5.tiff
+    Untracked:  data/tcga_medecom_corr_LMC6.tiff
+    Untracked:  data/tcga_medecom_corr_LMC7.tiff
+    Untracked:  data/tcga_medecom_correlation.RData
+    Untracked:  data/~$Fukazawa_2016_Sox2_targets.xlsx
+    Untracked:  data/~$linked_promoter_TSS.xlsx
+    Untracked:  desktop.ini
+    Untracked:  docs/.gitignore
+    Untracked:  docs/DMR_enrichment.html
+    Untracked:  docs/DMR_report_selected.html
+    Untracked:  docs/Figure_1/
+    Untracked:  docs/Figure_2/
+    Untracked:  docs/Figure_3/
+    Untracked:  docs/Figures.html
+    Untracked:  docs/PCA_plots_selected.html
+    Untracked:  docs/QC_report/
+    Untracked:  docs/QC_report_no_SNPs/
+    Untracked:  docs/candiate_region_plot.html
+    Untracked:  docs/candiate_region_plot_histogram.html
+    Untracked:  docs/figure/DMR_enrichment.Rmd/
+    Untracked:  docs/figure/DMR_report.Rmd/
+    Untracked:  docs/figure/DMR_report_new_groups.Rmd/
+    Untracked:  docs/figure/DMR_report_selected.Rmd/
+    Untracked:  docs/figure/Figures.Rmd/
+    Untracked:  docs/figure/MeDeCom_all.Rmd/
+    Untracked:  docs/figure/MeDeCom_all_no_MsCCSP_c4.Rmd/
+    Untracked:  docs/figure/MeDeCom_controls.Rmd/
+    Untracked:  docs/figure/PCA_plots.Rmd/
+    Untracked:  docs/figure/PCA_plots_selected.Rmd/
+    Untracked:  docs/figure/prepare_medecom_regions.Rmd/
+    Untracked:  docs/medecom_CCSP_controls_plot.RDS
+    Untracked:  docs/plots_for_figures/
+    Untracked:  docs/prepare_homer.html
+    Untracked:  docs/prepare_medecom_regions.html
+    Untracked:  docs/site_libs/crosstalk-1.1.0.1/
+    Untracked:  output/DML_results_new_groups.RDS
+    Untracked:  output/QC_report.html
+    Untracked:  output/QC_report/MC_per_chr.tsv
+    Untracked:  output/QC_report/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/contig_lens.tsv
+    Untracked:  output/QC_report/global_MC_per_samp.tsv
+    Untracked:  output/QC_report/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_deprecated/
+    Untracked:  output/QC_report_no_SNPs/MC_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/contig_lens.tsv
+    Untracked:  output/QC_report_no_SNPs/global_MC_per_samp.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs_deprecated/
+    Untracked:  output/annotated_regions/
+    Untracked:  output/candidate_regions_hist/
+    Untracked:  output/candidate_regions_point/
+    Untracked:  output/enrichment_res/
+    Untracked:  output/homer/
+    Untracked:  output/poised_enhancers_all_heatmap.pdf
+    Untracked:  output/poised_enhancers_controls_heatmap.pdf
+    Untracked:  output/poised_enhancers_heatmap.pdf
+    Untracked:  output/tca_res.RDS
+    Untracked:  output/tca_res_candidate_promoters.RDS
+    Untracked:  output/tca_res_promoter_candidate.RDS
+
+Unstaged changes:
+    Modified:   analysis/02-DMR_calling_new_groups.Rmd
+    Modified:   analysis/DMR_report_new_groups.Rmd
+    Modified:   analysis/MeDeCom_results.Rmd
+    Modified:   analysis/_site.yml
+    Modified:   analysis/index.Rmd
+    Modified:   code/MeDeCom_poised_enhancers.R
+    Modified:   code/gviz_region_plot.R
+    Modified:   code/homer_analysis.sh
+    Modified:   output/QC_report/methrix_reports.html
+    Modified:   output/QC_report_no_SNPs/methrix_reports.html
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/homer_new_groups.Rmd</code>) and HTML (<code>public/homer_new_groups.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/tkike/Lung_CoO/blob/69414764f023db912cf03730582d08997538a55d/analysis/homer_new_groups.Rmd" target="_blank">6941476</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-04-13
+</td>
+<td>
+wflow_publish(“analysis/homer_new_groups.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>DMRs &lt;- readRDS(file.path(DATA, &quot;DMRs_new_groups.RDS&quot;))
+comparisons_all &lt;- names(DMRs)
+
+#names(dmls) &lt;- labels</code></pre>
+<div id="read-in-homer-results" class="section level2">
+<h2>Read in HOMER results</h2>
+<pre class="r"><code>homer_results &lt;- list()
+
+for (comp in comparisons_all){
+  homer_results[[comp]] &lt;- list()
+  homer_results[[comp]][[&quot;gain&quot;]] &lt;- try(read_homer_output(paste0(HOMER_RESULTS, gsub(&quot; &quot;, &quot;_&quot;, comp),&quot;_gain&quot;)))
+  try(homer_results[[comp]][[&quot;gain&quot;]]$known_motif_table$direction &lt;- &quot;gain&quot;)
+  homer_results[[comp]][[&quot;loss&quot;]] &lt;- try(read_homer_output(paste0(HOMER_RESULTS, gsub(&quot; &quot;, &quot;_&quot;, comp),&quot;_loss&quot;)))
+   try(homer_results[[comp]][[&quot;loss&quot;]]$known_motif_table$direction &lt;- &quot;loss&quot;)
+}
+
+for (comp in names(homer_results)){
+if (class(homer_results[[comp]]$gain)==&quot;try-error&quot;)
+  homer_results[[comp]]$gain &lt;- NULL
+
+if (class(homer_results[[comp]]$loss)==&quot;try-error&quot;)
+  homer_results[[comp]]$loss &lt;- NULL
+
+  }</code></pre>
+</div>
+<div id="enrichment-results-known-motifs" class="section level2 tabset tabset-fade tabset-pills">
+<h2>Enrichment results, known motifs</h2>
+<div id="combined-plot" class="section level3">
+<h3>Combined plot</h3>
+<pre class="r"><code>combined_data &lt;- do.call(rbind.data.frame, known_motif_results)
+combined_data$significant&lt;- ifelse(combined_data$q_value_benjamini &lt; (0.05), &quot;Yes&quot;, &quot;No&quot; )
+combined_data$percent_of_target_sequences_with_motif &lt;-
+as.numeric(sapply(strsplit(combined_data$percent_of_target_sequences_with_motif ,&quot;%&quot;, fixed=TRUE),`[`, 1))
+combined_data$percent_of_background_sequences_with_motif &lt;-
+as.numeric(sapply(strsplit(combined_data$percent_of_background_sequences_with_motif ,&quot;%&quot;, fixed=TRUE),`[`, 1))
+combined_data$FC &lt;- combined_data$percent_of_target_sequences_with_motif/combined_data$percent_of_background_sequences_with_motif
+combined_data$MotifName &lt;- factor(combined_data$MotifName, levels = unique(combined_data$MotifName[order(combined_data$log_p, decreasing = T)]))
+
+p &lt;- ggplot(data = as.data.frame(combined_data), aes(y=MotifName, x=comp))+coord_fixed(ratio = 0.6)+facet_grid(~ direction)+
+geom_point(aes(size=log_p, fill=FC), pch=21)+
+scale_fill_gradient2( midpoint = 1, low=&quot;darkblue&quot;, high=&quot;darkred&quot;, name = &quot;Fold change&quot;)+
+scale_colour_manual(values=c(&quot;grey&quot;, &quot;black&quot;), name=&quot;q-value &lt; 0.05&quot;, drop=FALSE)+
+scale_size(name=&quot;p-value\n(-log10)&quot;, labels = label_func) +
+scale_y_discrete(limits=rev(levels(as.factor(combined_data$MotifName))))+
+theme(text =element_text(size=14, color=&quot;black&quot;, family = &quot;sans&quot;),
+axis.ticks = element_blank(), axis.line = element_blank(),
+axis.text.x=element_text(size=10, angle = 45, hjust=1, color=&quot;black&quot;, family=&quot;sans&quot;),
+axis.text.y=element_text(size=10, family=&quot;sans&quot;, color=&quot;black&quot;))+
+scale_x_discrete(name=NULL)+
+theme(legend.text=element_text(size=12, family=&quot;sans&quot;),
+legend.title=element_text(size=12, family= &quot;sans&quot;),
+legend.background = element_rect(fill=&quot;white&quot;, color=&quot;white&quot;),
+panel.background =  element_rect(fill=&quot;white&quot;), panel.grid.major = element_line(color=&quot;lightgrey&quot;),
+legend.key = element_rect(fill=&quot;white&quot;))+rremove(&quot;ylab&quot;)
+
+print(p)</code></pre>
+<p><img src="figure/homer_new_groups.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>for (comp in names(g)){
+    cat(&#39;\n&#39;)  
+   
+    cat(&quot;### Comparisons &quot;, comp, &quot; \n&quot;)
+   
+     print(g[[comp]])
+    #else {
+    #    print(p)
+    # }
+      cat(&#39;\n&#39;)
+}</code></pre>
+<pre><code>
+### Comparisons  MsCCSP_tumor_control_comparison  </code></pre>
+<p><img src="figure/homer_new_groups.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+
+### Comparisons  MsCCSP_MsSPC_control_comparison  </code></pre>
+<p><img src="figure/homer_new_groups.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+
+### Comparisons  MsSPC_tumor_control_comparison  </code></pre>
+<p><img src="figure/homer_new_groups.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+
+### Comparisons  MsCCSP_MsSPC_tumor_comparison  </code></pre>
+<p><img src="figure/homer_new_groups.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="results-in-tables" class="section level2 tabset tabset-fade tabset-pills">
+<h2>Results in tables</h2>
+<pre class="r"><code>for (comp in names(g)){
+      cat(&#39;\n&#39;)  
+   
+    cat(&quot;### Comparisons &quot;, comp, &quot; \n&quot;)
+   
+  
+  print(knitr::kable(known_motif_results[[comp]]) %&gt;%
+  kable_styling() %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;600px&quot;))
+       cat(&#39;\n&#39;)
+  }</code></pre>
+<div id="comparisons-msccsp_tumor_control_comparison" class="section level3">
+<h3>Comparisons MsCCSP_tumor_control_comparison</h3>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+motif_name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+consensus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+q_value_benjamini
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_target_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_background_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+direction
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+MotifName
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/LNCAP-FOXA1-ChIP-Seq(GSE27824)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-251.20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+10.61%
+</td>
+<td style="text-align:left;">
+5.60%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+106.35853
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/MCF7-FOXA1-ChIP-Seq(GSE26831)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-211.40
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+8.80%
+</td>
+<td style="text-align:left;">
+4.61%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+88.65956
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxa2(Forkhead)/Liver-Foxa2-ChIP-Seq(GSE25694)/Homer
+</td>
+<td style="text-align:left;">
+CYTGTTTACWYW
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-204.50
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.94%
+</td>
+<td style="text-align:left;">
+3.34%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA2
+</td>
+<td style="text-align:right;">
+85.83565
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXM1(Forkhead)/MCF7-FOXM1-ChIP-Seq(GSE72977)/Homer
+</td>
+<td style="text-align:left;">
+TRTTTACTTW
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-168.20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+8.80%
+</td>
+<td style="text-align:left;">
+4.99%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXM1
+</td>
+<td style="text-align:right;">
+70.96059
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fox:Ebox(Forkhead,bHLH)/Panc1-Foxa2-ChIP-Seq(GSE47459)/Homer
+</td>
+<td style="text-align:left;">
+NNNVCTGWGYAAACASN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-161.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+8.60%
+</td>
+<td style="text-align:left;">
+4.90%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOX:EBOX
+</td>
+<td style="text-align:right;">
+68.05750
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXK1(Forkhead)/HEK293-FOXK1-ChIP-Seq(GSE51673)/Homer
+</td>
+<td style="text-align:left;">
+NVWTGTTTAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-153.10
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+7.74%
+</td>
+<td style="text-align:left;">
+4.33%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXK1
+</td>
+<td style="text-align:right;">
+64.13668
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxo3(Forkhead)/U2OS-Foxo3-ChIP-Seq(E-MTAB-2701)/Homer
+</td>
+<td style="text-align:left;">
+DGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-151.50
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.12%
+</td>
+<td style="text-align:left;">
+3.15%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXO3
+</td>
+<td style="text-align:right;">
+63.20362
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxf1(Forkhead)/Lung-Foxf1-ChIP-Seq(GSE77951)/Homer
+</td>
+<td style="text-align:left;">
+WWATRTAAACAN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-145.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.99%
+</td>
+<td style="text-align:left;">
+3.84%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXF1
+</td>
+<td style="text-align:right;">
+61.26162
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FoxL2(Forkhead)/Ovary-FoxL2-ChIP-Seq(GSE60858)/Homer
+</td>
+<td style="text-align:left;">
+WWTRTAAACAVG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-115.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.23%
+</td>
+<td style="text-align:left;">
+3.55%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXL2
+</td>
+<td style="text-align:right;">
+48.31277
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXP1(Forkhead)/H9-FOXP1-ChIP-Seq(GSE31006)/Homer
+</td>
+<td style="text-align:left;">
+NYYTGTTTACHN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-111.90
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+3.83%
+</td>
+<td style="text-align:left;">
+1.84%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXP1
+</td>
+<td style="text-align:right;">
+46.39992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxa3(Forkhead)/Liver-Foxa3-ChIP-Seq(GSE77670)/Homer
+</td>
+<td style="text-align:left;">
+BSNTGTTTACWYWGN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-111.20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.94%
+</td>
+<td style="text-align:left;">
+1.26%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA3
+</td>
+<td style="text-align:right;">
+46.39992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXK2(Forkhead)/U2OS-FOXK2-ChIP-Seq(E-MTAB-2204)/Homer
+</td>
+<td style="text-align:left;">
+SCHTGTTTACAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-109.20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.75%
+</td>
+<td style="text-align:left;">
+2.51%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXK2
+</td>
+<td style="text-align:right;">
+45.43771
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FoxD3(forkhead)/ZebrafishEmbryo-Foxd3.biotin-ChIP-seq(GSE106676)/Homer
+</td>
+<td style="text-align:left;">
+TGTTTAYTTAGC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-87.08
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.81%
+</td>
+<td style="text-align:left;">
+4.32%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXD3
+</td>
+<td style="text-align:right;">
+35.47247
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxo1(Forkhead)/RAW-Foxo1-ChIP-Seq(Fan_et_al.)/Homer
+</td>
+<td style="text-align:left;">
+CTGTTTAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-67.41
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+13.53%
+</td>
+<td style="text-align:left;">
+10.37%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXO1
+</td>
+<td style="text-align:right;">
+27.50465
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD3(TEA)/HepG2-TEAD3-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+TRCATTCCAG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-66.45
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+7.27%
+</td>
+<td style="text-align:left;">
+4.98%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD3
+</td>
+<td style="text-align:right;">
+26.53462
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD4(TEA)/Tropoblast-Tead4-ChIP-Seq(GSE37350)/Homer
+</td>
+<td style="text-align:left;">
+CCWGGAATGY
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-64.06
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.78%
+</td>
+<td style="text-align:left;">
+3.79%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD4
+</td>
+<td style="text-align:right;">
+25.56265
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD1(TEAD)/HepG2-TEAD1-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+CYRCATTCCA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-61.07
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.13%
+</td>
+<td style="text-align:left;">
+4.12%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD1
+</td>
+<td style="text-align:right;">
+24.58897
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Six1(Homeobox)/Myoblast-Six1-ChIP-Chip(GSE20150)/Homer
+</td>
+<td style="text-align:left;">
+GKVTCADRTTWC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-49.34
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+1.91%
+</td>
+<td style="text-align:left;">
+0.97%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SIX1
+</td>
+<td style="text-align:right;">
+19.63728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Six4(Homeobox)/MCF7-SIX4-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+TGWAAYCTGABACCB
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-48.37
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+0.68%
+</td>
+<td style="text-align:left;">
+0.20%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SIX4
+</td>
+<td style="text-align:right;">
+19.63728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox10(HMG)/SciaticNerve-Sox3-ChIP-Seq(GSE35132)/Homer
+</td>
+<td style="text-align:left;">
+CCWTTGTYYB
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-41.86
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+10.00%
+</td>
+<td style="text-align:left;">
+7.84%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX10
+</td>
+<td style="text-align:right;">
+16.65956
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jun-AP1(bZIP)/K562-cJun-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+GATGASTCATCN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-229.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+1.56%
+</td>
+<td style="text-align:left;">
+0.81%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+JUN-AP1
+</td>
+<td style="text-align:right;">
+96.35853
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fosl2(bZIP)/3T3L1-Fosl2-ChIP-Seq(GSE56872)/Homer
+</td>
+<td style="text-align:left;">
+NATGASTCABNN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-202.10
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.01%
+</td>
+<td style="text-align:left;">
+1.19%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FOSL2
+</td>
+<td style="text-align:right;">
+84.65956
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fra2(bZIP)/Striatum-Fra2-ChIP-Seq(GSE43429)/Homer
+</td>
+<td style="text-align:left;">
+GGATGACTCATC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-157.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.91%
+</td>
+<td style="text-align:left;">
+2.00%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FRA2
+</td>
+<td style="text-align:right;">
+65.83565
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+JunB(bZIP)/DendriticCells-Junb-ChIP-Seq(GSE36099)/Homer
+</td>
+<td style="text-align:left;">
+RATGASTCAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-146.70
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+3.38%
+</td>
+<td style="text-align:left;">
+2.42%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+JUNB
+</td>
+<td style="text-align:right;">
+60.96059
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Egr2(Zf)/Thymocytes-Egr2-ChIP-Seq(GSE34254)/Homer
+</td>
+<td style="text-align:left;">
+NGCGTGGGCGGR
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-144.60
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+0.71%
+</td>
+<td style="text-align:left;">
+0.33%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+EGR2
+</td>
+<td style="text-align:right;">
+60.20362
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fra1(bZIP)/BT549-Fra1-ChIP-Seq(GSE46166)/Homer
+</td>
+<td style="text-align:left;">
+NNATGASTCATH
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-144.00
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+3.56%
+</td>
+<td style="text-align:left;">
+2.59%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FRA1
+</td>
+<td style="text-align:right;">
+60.20362
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFY(CCAAT)/Promoter/Homer
+</td>
+<td style="text-align:left;">
+RGCCAATSRG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-143.90
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.30%
+</td>
+<td style="text-align:left;">
+4.10%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NFY
+</td>
+<td style="text-align:right;">
+60.20362
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Atf3(bZIP)/GBM-ATF3-ChIP-Seq(GSE33912)/Homer
+</td>
+<td style="text-align:left;">
+DATGASTCATHN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-126.80
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.02%
+</td>
+<td style="text-align:left;">
+3.04%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ATF3
+</td>
+<td style="text-align:right;">
+53.26162
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BATF(bZIP)/Th17-BATF-ChIP-Seq(GSE39756)/Homer
+</td>
+<td style="text-align:left;">
+DATGASTCAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-116.80
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.07%
+</td>
+<td style="text-align:left;">
+3.12%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BATF
+</td>
+<td style="text-align:right;">
+48.31277
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AP-1(bZIP)/ThioMac-PU.1-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+VTGACTCATC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-109.90
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.38%
+</td>
+<td style="text-align:left;">
+3.42%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+AP-1
+</td>
+<td style="text-align:right;">
+45.35853
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PRDM1(Zf)/Hela-PRDM1-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+ACTTTCACTTTC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-95.86
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+3.96%
+</td>
+<td style="text-align:left;">
+3.10%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+PRDM1
+</td>
+<td style="text-align:right;">
+39.39992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Zac1(Zf)/Neuro2A-Plagl1-ChIP-Seq(GSE75942)/Homer
+</td>
+<td style="text-align:left;">
+HAWGRGGCCM
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-75.66
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+10.64%
+</td>
+<td style="text-align:left;">
+9.40%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ZAC1
+</td>
+<td style="text-align:right;">
+30.43771
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bach2(bZIP)/OCILy7-Bach2-ChIP-Seq(GSE44420)/Homer
+</td>
+<td style="text-align:left;">
+TGCTGAGTCA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-71.62
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+1.00%
+</td>
+<td style="text-align:left;">
+0.65%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BACH2
+</td>
+<td style="text-align:right;">
+29.47247
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Npas4(bHLH)/Neuron-Npas4-ChIP-Seq(GSE127793)/Homer
+</td>
+<td style="text-align:left;">
+NHRTCACGACDN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-52.91
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.84%
+</td>
+<td style="text-align:left;">
+2.31%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NPAS4
+</td>
+<td style="text-align:right;">
+20.50465
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFAT(RHD)/Jurkat-NFATC1-ChIP-Seq(Jolma_et_al.)/Homer
+</td>
+<td style="text-align:left;">
+ATTTTCCATT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-42.89
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.22%
+</td>
+<td style="text-align:left;">
+5.50%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NFAT
+</td>
+<td style="text-align:right;">
+16.56265
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ZNF711(Zf)/SHSY5Y-ZNF711-ChIP-Seq(GSE20673)/Homer
+</td>
+<td style="text-align:left;">
+AGGCCTAG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-42.25
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.52%
+</td>
+<td style="text-align:left;">
+4.85%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ZNF711
+</td>
+<td style="text-align:right;">
+16.56265
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CEBP(bZIP)/ThioMac-CEBPb-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+ATTGCGCAAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-40.57
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.29%
+</td>
+<td style="text-align:left;">
+3.71%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CEBP
+</td>
+<td style="text-align:right;">
+15.58897
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HOXB13(Homeobox)/ProstateTumor-HOXB13-ChIP-Seq(GSE56288)/Homer
+</td>
+<td style="text-align:left;">
+TTTTATKRGG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-36.85
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+8.15%
+</td>
+<td style="text-align:left;">
+7.40%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HOXB13
+</td>
+<td style="text-align:right;">
+14.61380
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Egr1(Zf)/K562-Egr1-ChIP-Seq(GSE32465)/Homer
+</td>
+<td style="text-align:left;">
+TGCGTGGGYG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-36.81
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+1.95%
+</td>
+<td style="text-align:left;">
+1.58%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+EGR1
+</td>
+<td style="text-align:right;">
+13.63728
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+STAT5(Stat)/mCD4+-Stat5-ChIP-Seq(GSE12346)/Homer
+</td>
+<td style="text-align:left;">
+RTTTCTNAGAAA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-32.40
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.20%
+</td>
+<td style="text-align:left;">
+1.83%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+STAT5
+</td>
+<td style="text-align:right;">
+12.65956
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="comparisons-msccsp_msspc_control_comparison" class="section level3">
+<h3>Comparisons MsCCSP_MsSPC_control_comparison</h3>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+motif_name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+consensus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+q_value_benjamini
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_target_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_background_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+direction
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+MotifName
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/LNCAP-FOXA1-ChIP-Seq(GSE27824)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-139.80
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+16.52%
+</td>
+<td style="text-align:left;">
+7.70%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+57.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/MCF7-FOXA1-ChIP-Seq(GSE26831)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-116.80
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+13.76%
+</td>
+<td style="text-align:left;">
+6.36%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+47.659556
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXM1(Forkhead)/MCF7-FOXM1-ChIP-Seq(GSE72977)/Homer
+</td>
+<td style="text-align:left;">
+TRTTTACTTW
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-93.63
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+13.45%
+</td>
+<td style="text-align:left;">
+6.77%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXM1
+</td>
+<td style="text-align:right;">
+37.835647
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxa2(Forkhead)/Liver-Foxa2-ChIP-Seq(GSE25694)/Homer
+</td>
+<td style="text-align:left;">
+CYTGTTTACWYW
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-90.50
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+10.07%
+</td>
+<td style="text-align:left;">
+4.51%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA2
+</td>
+<td style="text-align:right;">
+36.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FoxL2(Forkhead)/Ovary-FoxL2-ChIP-Seq(GSE60858)/Homer
+</td>
+<td style="text-align:left;">
+WWTRTAAACAVG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-88.24
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+10.29%
+</td>
+<td style="text-align:left;">
+4.71%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXL2
+</td>
+<td style="text-align:right;">
+36.057496
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxf1(Forkhead)/Lung-Foxf1-ChIP-Seq(GSE77951)/Homer
+</td>
+<td style="text-align:left;">
+WWATRTAAACAN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-86.04
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+11.07%
+</td>
+<td style="text-align:left;">
+5.29%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXF1
+</td>
+<td style="text-align:right;">
+35.136677
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxo3(Forkhead)/U2OS-Foxo3-ChIP-Seq(E-MTAB-2701)/Homer
+</td>
+<td style="text-align:left;">
+DGTAAACA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-84.83
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+9.33%
+</td>
+<td style="text-align:left;">
+4.14%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXO3
+</td>
+<td style="text-align:right;">
+34.203624
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXK1(Forkhead)/HEK293-FOXK1-ChIP-Seq(GSE51673)/Homer
+</td>
+<td style="text-align:left;">
+NVWTGTTTAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-73.77
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+11.35%
+</td>
+<td style="text-align:left;">
+5.84%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXK1
+</td>
+<td style="text-align:right;">
+30.261616
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fox:Ebox(Forkhead,bHLH)/Panc1-Foxa2-ChIP-Seq(GSE47459)/Homer
+</td>
+<td style="text-align:left;">
+NNNVCTGWGYAAACASN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-73.46
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+11.19%
+</td>
+<td style="text-align:left;">
+5.74%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOX:EBOX
+</td>
+<td style="text-align:right;">
+29.312768
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxa3(Forkhead)/Liver-Foxa3-ChIP-Seq(GSE77670)/Homer
+</td>
+<td style="text-align:left;">
+BSNTGTTTACWYWGN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-67.37
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.68%
+</td>
+<td style="text-align:left;">
+1.60%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA3
+</td>
+<td style="text-align:right;">
+27.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxo1(Forkhead)/RAW-Foxo1-ChIP-Seq(Fan_et_al.)/Homer
+</td>
+<td style="text-align:left;">
+CTGTTTAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-56.53
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+17.02%
+</td>
+<td style="text-align:left;">
+10.94%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXO1
+</td>
+<td style="text-align:right;">
+22.399919
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXP1(Forkhead)/H9-FOXP1-ChIP-Seq(GSE31006)/Homer
+</td>
+<td style="text-align:left;">
+NYYTGTTTACHN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-52.62
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.64%
+</td>
+<td style="text-align:left;">
+2.47%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXP1
+</td>
+<td style="text-align:right;">
+20.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX-AML(Runt)/CD4+-PolII-ChIP-Seq(Barski_et_al.)/Homer
+</td>
+<td style="text-align:left;">
+GCTGTGGTTW
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-44.32
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.97%
+</td>
+<td style="text-align:left;">
+3.62%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX-AML
+</td>
+<td style="text-align:right;">
+17.472469
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXK2(Forkhead)/U2OS-FOXK2-ChIP-Seq(E-MTAB-2204)/Homer
+</td>
+<td style="text-align:left;">
+SCHTGTTTACAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-40.08
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.42%
+</td>
+<td style="text-align:left;">
+3.35%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXK2
+</td>
+<td style="text-align:right;">
+15.504654
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX(Runt)/HPC7-Runx1-ChIP-Seq(GSE22178)/Homer
+</td>
+<td style="text-align:left;">
+SAAACCACAG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-37.27
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+7.01%
+</td>
+<td style="text-align:left;">
+3.88%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX
+</td>
+<td style="text-align:right;">
+14.534617
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FoxD3(forkhead)/ZebrafishEmbryo-Foxd3.biotin-ChIP-seq(GSE106676)/Homer
+</td>
+<td style="text-align:left;">
+TGTTTAYTTAGC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-36.54
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+8.90%
+</td>
+<td style="text-align:left;">
+5.35%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXD3
+</td>
+<td style="text-align:right;">
+13.588975
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX1(Runt)/Jurkat-RUNX1-ChIP-Seq(GSE29180)/Homer
+</td>
+<td style="text-align:left;">
+AAACCACARM
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-34.59
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+9.33%
+</td>
+<td style="text-align:left;">
+5.78%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX1
+</td>
+<td style="text-align:right;">
+13.588975
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX2(Runt)/PCa-RUNX2-ChIP-Seq(GSE33889)/Homer
+</td>
+<td style="text-align:left;">
+NWAACCACADNN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-33.26
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+7.81%
+</td>
+<td style="text-align:left;">
+4.65%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX2
+</td>
+<td style="text-align:right;">
+12.613798
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox3(HMG)/NPC-Sox3-ChIP-Seq(GSE33059)/Homer
+</td>
+<td style="text-align:left;">
+CCWTTGTY
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-26.01
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+13.39%
+</td>
+<td style="text-align:left;">
+9.66%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX3
+</td>
+<td style="text-align:right;">
+9.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Six1(Homeobox)/Myoblast-Six1-ChIP-Chip(GSE20150)/Homer
+</td>
+<td style="text-align:left;">
+GKVTCADRTTWC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-22.73
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.26%
+</td>
+<td style="text-align:left;">
+0.97%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SIX1
+</td>
+<td style="text-align:right;">
+7.680745
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CEBP(bZIP)/ThioMac-CEBPb-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+ATTGCGCAAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-107.50
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.47%
+</td>
+<td style="text-align:left;">
+2.73%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CEBP
+</td>
+<td style="text-align:right;">
+43.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.1(Homeobox)/LungAC-Nkx2.1-ChIP-Seq(GSE43252)/Homer
+</td>
+<td style="text-align:left;">
+RSCACTYRAG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-98.48
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+26.04%
+</td>
+<td style="text-align:left;">
+18.44%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX2.1
+</td>
+<td style="text-align:right;">
+39.659556
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.2(Homeobox)/NPC-Nkx2.2-ChIP-Seq(GSE61673)/Homer
+</td>
+<td style="text-align:left;">
+BTBRAGTGSN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-74.22
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+16.94%
+</td>
+<td style="text-align:left;">
+11.47%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX2.2
+</td>
+<td style="text-align:right;">
+29.835647
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.5(Homeobox)/HL1-Nkx2.5.biotin-ChIP-Seq(GSE21529)/Homer
+</td>
+<td style="text-align:left;">
+RRSCACTYAA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-70.97
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+19.22%
+</td>
+<td style="text-align:left;">
+13.53%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX2.5
+</td>
+<td style="text-align:right;">
+27.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HLF(bZIP)/HSC-HLF.Flag-ChIP-Seq(GSE69817)/Homer
+</td>
+<td style="text-align:left;">
+RTTATGYAAB
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-47.03
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.95%
+</td>
+<td style="text-align:left;">
+3.41%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HLF
+</td>
+<td style="text-align:right;">
+18.057496
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bapx1(Homeobox)/VertebralCol-Bapx1-ChIP-Seq(GSE36672)/Homer
+</td>
+<td style="text-align:left;">
+TTRAGTGSYK
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-44.51
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+17.49%
+</td>
+<td style="text-align:left;">
+13.13%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BAPX1
+</td>
+<td style="text-align:right;">
+17.261616
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFIL3(bZIP)/HepG2-NFIL3-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+VTTACGTAAYNNNNN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-44.30
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.64%
+</td>
+<td style="text-align:left;">
+2.49%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NFIL3
+</td>
+<td style="text-align:right;">
+17.261616
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Atf4(bZIP)/MEF-Atf4-ChIP-Seq(GSE35681)/Homer
+</td>
+<td style="text-align:left;">
+MTGATGCAAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-44.14
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.43%
+</td>
+<td style="text-align:left;">
+0.99%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ATF4
+</td>
+<td style="text-align:right;">
+17.261616
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NF1-halfsite(CTF)/LNCaP-NF1-ChIP-Seq(Unpublished)/Homer
+</td>
+<td style="text-align:left;">
+YTGCCAAG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-33.93
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+11.72%
+</td>
+<td style="text-align:left;">
+8.58%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NF1-HALFSITE
+</td>
+<td style="text-align:right;">
+12.312768
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CEBP:AP1(bZIP)/ThioMac-CEBPb-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+DRTGTTGCAA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-28.79
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+5.27%
+</td>
+<td style="text-align:left;">
+3.36%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CEBP:AP1
+</td>
+<td style="text-align:right;">
+10.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+USF1(bHLH)/GM12878-Usf1-ChIP-Seq(GSE32465)/Homer
+</td>
+<td style="text-align:left;">
+SGTCACGTGR
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-28.13
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+3.70%
+</td>
+<td style="text-align:left;">
+2.16%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+USF1
+</td>
+<td style="text-align:right;">
+10.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx3.1(Homeobox)/LNCaP-Nkx3.1-ChIP-Seq(GSE28264)/Homer
+</td>
+<td style="text-align:left;">
+AAGCACTTAA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-27.77
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+18.10%
+</td>
+<td style="text-align:left;">
+14.61%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX3.1
+</td>
+<td style="text-align:right;">
+10.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Gata2(Zf)/K562-GATA2-ChIP-Seq(GSE18829)/Homer
+</td>
+<td style="text-align:left;">
+BBCTTATCTS
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-26.96
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.50%
+</td>
+<td style="text-align:left;">
+2.80%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+GATA2
+</td>
+<td style="text-align:right;">
+9.534617
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MITF(bHLH)/MastCells-MITF-ChIP-Seq(GSE48085)/Homer
+</td>
+<td style="text-align:left;">
+RTCATGTGAC
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-26.56
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.38%
+</td>
+<td style="text-align:left;">
+4.34%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+MITF
+</td>
+<td style="text-align:right;">
+9.534617
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Gata1(Zf)/K562-GATA1-ChIP-Seq(GSE18829)/Homer
+</td>
+<td style="text-align:left;">
+SAGATAAGRV
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-26.05
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.04%
+</td>
+<td style="text-align:left;">
+2.47%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+GATA1
+</td>
+<td style="text-align:right;">
+9.534617
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CLOCK(bHLH)/Liver-Clock-ChIP-Seq(GSE39860)/Homer
+</td>
+<td style="text-align:left;">
+GHCACGTG
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-24.79
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+4.59%
+</td>
+<td style="text-align:left;">
+2.94%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CLOCK
+</td>
+<td style="text-align:right;">
+8.562646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Usf2(bHLH)/C2C12-Usf2-ChIP-Seq(GSE36030)/Homer
+</td>
+<td style="text-align:left;">
+GTCACGTGGT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-22.16
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+2.54%
+</td>
+<td style="text-align:left;">
+1.43%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+USF2
+</td>
+<td style="text-align:right;">
+7.613798
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Gata4(Zf)/Heart-Gata4-ChIP-Seq(GSE35151)/Homer
+</td>
+<td style="text-align:left;">
+NBWGATAAGR
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-20.78
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+6.36%
+</td>
+<td style="text-align:left;">
+4.56%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+GATA4
+</td>
+<td style="text-align:right;">
+7.613798
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Chop(bZIP)/MEF-Chop-ChIP-Seq(GSE35681)/Homer
+</td>
+<td style="text-align:left;">
+ATTGCATCAT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-19.57
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+1.58%
+</td>
+<td style="text-align:left;">
+0.79%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CHOP
+</td>
+<td style="text-align:right;">
+6.680745
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bHLHE41(bHLH)/proB-Bhlhe41-ChIP-Seq(GSE93764)/Homer
+</td>
+<td style="text-align:left;">
+KCACGTGMCN
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-18.96
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+7.57%
+</td>
+<td style="text-align:left;">
+5.69%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BHLHE41
+</td>
+<td style="text-align:right;">
+6.680745
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="comparisons-msspc_tumor_control_comparison" class="section level3">
+<h3>Comparisons MsSPC_tumor_control_comparison</h3>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+motif_name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+consensus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+q_value_benjamini
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_target_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_background_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+direction
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+MotifName
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+RFX(HTH)/K562-RFX3-ChIP-Seq(SRA012198)/Homer
+</td>
+<td style="text-align:left;">
+CGGTTGCCATGGCAAC
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-30.93
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+1.16%
+</td>
+<td style="text-align:left;">
+0.28%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RFX
+</td>
+<td style="text-align:right;">
+10.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD1(TEAD)/HepG2-TEAD1-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+CYRCATTCCA
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-27.22
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+6.62%
+</td>
+<td style="text-align:left;">
+4.14%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD1
+</td>
+<td style="text-align:right;">
+8.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rfx2(HTH)/LoVo-RFX2-ChIP-Seq(GSE49402)/Homer
+</td>
+<td style="text-align:left;">
+GTTGCCATGGCAACM
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-26.70
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+1.21%
+</td>
+<td style="text-align:left;">
+0.35%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RFX2
+</td>
+<td style="text-align:right;">
+8.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD4(TEA)/Tropoblast-Tead4-ChIP-Seq(GSE37350)/Homer
+</td>
+<td style="text-align:left;">
+CCWGGAATGY
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-25.67
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.89%
+</td>
+<td style="text-align:left;">
+3.63%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD4
+</td>
+<td style="text-align:right;">
+8.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD(TEA)/Fibroblast-PU.1-ChIP-Seq(Unpublished)/Homer
+</td>
+<td style="text-align:left;">
+YCWGGAATGY
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-24.50
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+4.63%
+</td>
+<td style="text-align:left;">
+2.70%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD
+</td>
+<td style="text-align:right;">
+8.136677
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TEAD3(TEA)/HepG2-TEAD3-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+TRCATTCCAG
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-23.88
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+7.29%
+</td>
+<td style="text-align:left;">
+4.84%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TEAD3
+</td>
+<td style="text-align:right;">
+8.136677
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxf1(Forkhead)/Lung-Foxf1-ChIP-Seq(GSE77951)/Homer
+</td>
+<td style="text-align:left;">
+WWATRTAAACAN
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-21.15
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.57%
+</td>
+<td style="text-align:left;">
+3.57%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXF1
+</td>
+<td style="text-align:right;">
+7.203624
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rfx1(HTH)/NPC-H3K4me1-ChIP-Seq(GSE16256)/Homer
+</td>
+<td style="text-align:left;">
+KGTTGCCATGGCAA
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-20.68
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+1.83%
+</td>
+<td style="text-align:left;">
+0.80%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RFX1
+</td>
+<td style="text-align:right;">
+6.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/LNCAP-FOXA1-ChIP-Seq(GSE27824)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-20.60
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+7.51%
+</td>
+<td style="text-align:left;">
+5.19%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+6.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NF1-halfsite(CTF)/LNCaP-NF1-ChIP-Seq(Unpublished)/Homer
+</td>
+<td style="text-align:left;">
+YTGCCAAG
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-19.79
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+12.13%
+</td>
+<td style="text-align:left;">
+9.23%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+NF1-HALFSITE
+</td>
+<td style="text-align:right;">
+6.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fox:Ebox(Forkhead,bHLH)/Panc1-Foxa2-ChIP-Seq(GSE47459)/Homer
+</td>
+<td style="text-align:left;">
+NNNVCTGWGYAAACASN
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-18.85
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+6.54%
+</td>
+<td style="text-align:left;">
+4.47%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOX:EBOX
+</td>
+<td style="text-align:right;">
+6.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Foxo3(Forkhead)/U2OS-Foxo3-ChIP-Seq(E-MTAB-2701)/Homer
+</td>
+<td style="text-align:left;">
+DGTAAACA
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-18.58
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+4.63%
+</td>
+<td style="text-align:left;">
+2.93%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXO3
+</td>
+<td style="text-align:right;">
+6.437707
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.2(Homeobox)/NPC-Nkx2.2-ChIP-Seq(GSE61673)/Homer
+</td>
+<td style="text-align:left;">
+BTBRAGTGSN
+</td>
+<td style="text-align:right;">
+1e-07
+</td>
+<td style="text-align:right;">
+-17.77
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+13.64%
+</td>
+<td style="text-align:left;">
+10.74%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+NKX2.2
+</td>
+<td style="text-align:right;">
+5.562646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TRPS1(Zf)/MCF7-TRPS1-ChIP-Seq(GSE107013)/Homer
+</td>
+<td style="text-align:left;">
+AGATAAGANN
+</td>
+<td style="text-align:right;">
+1e-07
+</td>
+<td style="text-align:right;">
+-16.42
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+11.00%
+</td>
+<td style="text-align:left;">
+8.49%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+TRPS1
+</td>
+<td style="text-align:right;">
+5.562646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+X-box(HTH)/NPC-H3K4me1-ChIP-Seq(GSE16256)/Homer
+</td>
+<td style="text-align:left;">
+GGTTGCCATGGCAA
+</td>
+<td style="text-align:right;">
+1e-07
+</td>
+<td style="text-align:right;">
+-16.28
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+1.10%
+</td>
+<td style="text-align:left;">
+0.43%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+X-BOX
+</td>
+<td style="text-align:right;">
+5.562646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXA1(Forkhead)/MCF7-FOXA1-ChIP-Seq(GSE26831)/Homer
+</td>
+<td style="text-align:left;">
+WAAGTAAACA
+</td>
+<td style="text-align:right;">
+1e-07
+</td>
+<td style="text-align:right;">
+-16.26
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+6.08%
+</td>
+<td style="text-align:left;">
+4.24%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXA1
+</td>
+<td style="text-align:right;">
+5.562646
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FOXP1(Forkhead)/H9-FOXP1-ChIP-Seq(GSE31006)/Homer
+</td>
+<td style="text-align:left;">
+NYYTGTTTACHN
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-16.08
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+2.85%
+</td>
+<td style="text-align:left;">
+1.65%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOXP1
+</td>
+<td style="text-align:right;">
+4.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.1(Homeobox)/LungAC-Nkx2.1-ChIP-Seq(GSE43252)/Homer
+</td>
+<td style="text-align:left;">
+RSCACTYRAG
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-15.80
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+20.45%
+</td>
+<td style="text-align:left;">
+17.18%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+NKX2.1
+</td>
+<td style="text-align:right;">
+4.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+USF1(bHLH)/GM12878-Usf1-ChIP-Seq(GSE32465)/Homer
+</td>
+<td style="text-align:left;">
+SGTCACGTGR
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-14.57
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+3.50%
+</td>
+<td style="text-align:left;">
+2.21%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+USF1
+</td>
+<td style="text-align:right;">
+4.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Usf2(bHLH)/C2C12-Usf2-ChIP-Seq(GSE36030)/Homer
+</td>
+<td style="text-align:left;">
+GTCACGTGGT
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-13.80
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+2.37%
+</td>
+<td style="text-align:left;">
+1.36%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+USF2
+</td>
+<td style="text-align:right;">
+3.820924
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jun-AP1(bZIP)/K562-cJun-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+GATGASTCATCN
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-127.60
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+2.56%
+</td>
+<td style="text-align:left;">
+0.75%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+JUN-AP1
+</td>
+<td style="text-align:right;">
+52.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fosl2(bZIP)/3T3L1-Fosl2-ChIP-Seq(GSE56872)/Homer
+</td>
+<td style="text-align:left;">
+NATGASTCABNN
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-100.60
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+3.04%
+</td>
+<td style="text-align:left;">
+1.17%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FOSL2
+</td>
+<td style="text-align:right;">
+40.659556
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fra1(bZIP)/BT549-Fra1-ChIP-Seq(GSE46166)/Homer
+</td>
+<td style="text-align:left;">
+NNATGASTCATH
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-89.33
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.04%
+</td>
+<td style="text-align:left;">
+2.59%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FRA1
+</td>
+<td style="text-align:right;">
+35.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fra2(bZIP)/Striatum-Fra2-ChIP-Seq(GSE43429)/Homer
+</td>
+<td style="text-align:left;">
+GGATGACTCATC
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-88.23
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+4.18%
+</td>
+<td style="text-align:left;">
+2.00%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+FRA2
+</td>
+<td style="text-align:right;">
+35.960586
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+JunB(bZIP)/DendriticCells-Junb-ChIP-Seq(GSE36099)/Homer
+</td>
+<td style="text-align:left;">
+RATGASTCAT
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-83.50
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+4.74%
+</td>
+<td style="text-align:left;">
+2.44%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+JUNB
+</td>
+<td style="text-align:right;">
+34.057496
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BATF(bZIP)/Th17-BATF-ChIP-Seq(GSE39756)/Homer
+</td>
+<td style="text-align:left;">
+DATGASTCAT
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-74.21
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.55%
+</td>
+<td style="text-align:left;">
+3.15%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BATF
+</td>
+<td style="text-align:right;">
+30.136677
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AP-1(bZIP)/ThioMac-PU.1-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+VTGACTCATC
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-73.35
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.79%
+</td>
+<td style="text-align:left;">
+3.34%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+AP-1
+</td>
+<td style="text-align:right;">
+29.203624
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Atf3(bZIP)/GBM-ATF3-ChIP-Seq(GSE33912)/Homer
+</td>
+<td style="text-align:left;">
+DATGASTCATHN
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-64.92
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.29%
+</td>
+<td style="text-align:left;">
+3.08%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ATF3
+</td>
+<td style="text-align:right;">
+26.261616
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bach2(bZIP)/OCILy7-Bach2-ChIP-Seq(GSE44420)/Homer
+</td>
+<td style="text-align:left;">
+TGCTGAGTCA
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-44.75
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+1.58%
+</td>
+<td style="text-align:left;">
+0.67%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BACH2
+</td>
+<td style="text-align:right;">
+17.312768
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFY(CCAAT)/Promoter/Homer
+</td>
+<td style="text-align:left;">
+RGCCAATSRG
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-35.49
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+5.95%
+</td>
+<td style="text-align:left;">
+4.17%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NFY
+</td>
+<td style="text-align:right;">
+13.358526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PRDM1(Zf)/Hela-PRDM1-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+ACTTTCACTTTC
+</td>
+<td style="text-align:right;">
+1e-07
+</td>
+<td style="text-align:right;">
+-16.46
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+4.11%
+</td>
+<td style="text-align:left;">
+3.11%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+PRDM1
+</td>
+<td style="text-align:right;">
+5.399919
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HLF(bZIP)/HSC-HLF.Flag-ChIP-Seq(GSE69817)/Homer
+</td>
+<td style="text-align:left;">
+RTTATGYAAB
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-15.98
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+6.61%
+</td>
+<td style="text-align:left;">
+5.35%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HLF
+</td>
+<td style="text-align:right;">
+4.504654
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Zac1(Zf)/Neuro2A-Plagl1-ChIP-Seq(GSE75942)/Homer
+</td>
+<td style="text-align:left;">
+HAWGRGGCCM
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-14.60
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+11.24%
+</td>
+<td style="text-align:left;">
+9.69%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ZAC1
+</td>
+<td style="text-align:right;">
+4.504654
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Egr2(Zf)/Thymocytes-Egr2-ChIP-Seq(GSE34254)/Homer
+</td>
+<td style="text-align:left;">
+NGCGTGGGCGGR
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-14.38
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+0.68%
+</td>
+<td style="text-align:left;">
+0.34%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+EGR2
+</td>
+<td style="text-align:right;">
+4.504654
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ZNF711(Zf)/SHSY5Y-ZNF711-ChIP-Seq(GSE20673)/Homer
+</td>
+<td style="text-align:left;">
+AGGCCTAG
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-13.75
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+6.15%
+</td>
+<td style="text-align:left;">
+5.03%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ZNF711
+</td>
+<td style="text-align:right;">
+3.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Npas4(bHLH)/Neuron-Npas4-ChIP-Seq(GSE127793)/Homer
+</td>
+<td style="text-align:left;">
+NHRTCACGACDN
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-13.49
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:left;">
+3.16%
+</td>
+<td style="text-align:left;">
+2.38%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NPAS4
+</td>
+<td style="text-align:right;">
+3.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+STAT5(Stat)/mCD4+-Stat5-ChIP-Seq(GSE12346)/Homer
+</td>
+<td style="text-align:left;">
+RTTTCTNAGAAA
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-12.80
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:left;">
+2.69%
+</td>
+<td style="text-align:left;">
+1.99%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+STAT5
+</td>
+<td style="text-align:right;">
+3.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hoxd13(Homeobox)/ChickenMSG-Hoxd13.Flag-ChIP-Seq(GSE86088)/Homer
+</td>
+<td style="text-align:left;">
+NCYAATAAAA
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-12.26
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:left;">
+13.70%
+</td>
+<td style="text-align:left;">
+12.16%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HOXD13
+</td>
+<td style="text-align:right;">
+3.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hoxa11(Homeobox)/ChickenMSG-Hoxa11.Flag-ChIP-Seq(GSE86088)/Homer
+</td>
+<td style="text-align:left;">
+TTTTATGGCM
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-11.82
+</td>
+<td style="text-align:right;">
+2e-04
+</td>
+<td style="text-align:left;">
+19.39%
+</td>
+<td style="text-align:left;">
+17.64%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HOXA11
+</td>
+<td style="text-align:right;">
+3.637279
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nanog(Homeobox)/mES-Nanog-ChIP-Seq(GSE11724)/Homer
+</td>
+<td style="text-align:left;">
+RGCCATTAAC
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-11.31
+</td>
+<td style="text-align:right;">
+3e-04
+</td>
+<td style="text-align:left;">
+30.09%
+</td>
+<td style="text-align:left;">
+28.09%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NANOG
+</td>
+<td style="text-align:right;">
+2.738737
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="comparisons-msccsp_msspc_tumor_comparison" class="section level3">
+<h3>Comparisons MsCCSP_MsSPC_tumor_comparison</h3>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+motif_name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+consensus
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p_value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+q_value_benjamini
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_target_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+percent_of_background_sequences_with_motif
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+direction
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+MotifName
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+log_p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+IRF1(IRF)/PBMC-IRF1-ChIP-Seq(GSE43036)/Homer
+</td>
+<td style="text-align:left;">
+GAAAGTGAAAGT
+</td>
+<td style="text-align:right;">
+0e+00
+</td>
+<td style="text-align:right;">
+-19.620
+</td>
+<td style="text-align:right;">
+0.0000
+</td>
+<td style="text-align:left;">
+2.77%
+</td>
+<td style="text-align:left;">
+0.70%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+IRF1
+</td>
+<td style="text-align:right;">
+5.3585259
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mef2b(MADS)/HEK293-Mef2b.V5-ChIP-Seq(GSE67450)/Homer
+</td>
+<td style="text-align:left;">
+GCTATTTTTGGM
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-13.500
+</td>
+<td style="text-align:right;">
+0.0003
+</td>
+<td style="text-align:left;">
+7.80%
+</td>
+<td style="text-align:left;">
+4.38%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+MEF2B
+</td>
+<td style="text-align:right;">
+3.0574959
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+IRF2(IRF)/Erythroblas-IRF2-ChIP-Seq(GSE36985)/Homer
+</td>
+<td style="text-align:left;">
+GAAASYGAAASY
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-13.500
+</td>
+<td style="text-align:right;">
+0.0003
+</td>
+<td style="text-align:left;">
+1.85%
+</td>
+<td style="text-align:left;">
+0.47%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+IRF2
+</td>
+<td style="text-align:right;">
+3.0574959
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox6(HMG)/Myotubes-Sox6-ChIP-Seq(GSE32627)/Homer
+</td>
+<td style="text-align:left;">
+CCATTGTTNY
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-12.250
+</td>
+<td style="text-align:right;">
+0.0005
+</td>
+<td style="text-align:left;">
+14.37%
+</td>
+<td style="text-align:left;">
+9.86%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX6
+</td>
+<td style="text-align:right;">
+3.0574959
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+IRF3(IRF)/BMDM-Irf3-ChIP-Seq(GSE67343)/Homer
+</td>
+<td style="text-align:left;">
+AGTTTCAKTTTC
+</td>
+<td style="text-align:right;">
+1e-05
+</td>
+<td style="text-align:right;">
+-11.930
+</td>
+<td style="text-align:right;">
+0.0006
+</td>
+<td style="text-align:left;">
+4.00%
+</td>
+<td style="text-align:left;">
+1.82%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+IRF3
+</td>
+<td style="text-align:right;">
+3.0574959
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PRDM1(Zf)/Hela-PRDM1-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+ACTTTCACTTTC
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-11.400
+</td>
+<td style="text-align:right;">
+0.0008
+</td>
+<td style="text-align:left;">
+5.54%
+</td>
+<td style="text-align:left;">
+2.94%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+PRDM1
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+IRF8(IRF)/BMDM-IRF8-ChIP-Seq(GSE77884)/Homer
+</td>
+<td style="text-align:left;">
+GRAASTGAAAST
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-11.310
+</td>
+<td style="text-align:right;">
+0.0008
+</td>
+<td style="text-align:left;">
+3.70%
+</td>
+<td style="text-align:left;">
+1.66%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+IRF8
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fosl2(bZIP)/3T3L1-Fosl2-ChIP-Seq(GSE56872)/Homer
+</td>
+<td style="text-align:left;">
+NATGASTCABNN
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-11.130
+</td>
+<td style="text-align:right;">
+0.0008
+</td>
+<td style="text-align:left;">
+2.57%
+</td>
+<td style="text-align:left;">
+0.96%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FOSL2
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ISRE(IRF)/ThioMac-LPS-Expression(GSE23622)/Homer
+</td>
+<td style="text-align:left;">
+AGTTTCASTTTC
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-10.310
+</td>
+<td style="text-align:right;">
+0.0016
+</td>
+<td style="text-align:left;">
+1.23%
+</td>
+<td style="text-align:left;">
+0.29%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+ISRE
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox10(HMG)/SciaticNerve-Sox3-ChIP-Seq(GSE35132)/Homer
+</td>
+<td style="text-align:left;">
+CCWTTGTYYB
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-10.120
+</td>
+<td style="text-align:right;">
+0.0018
+</td>
+<td style="text-align:left;">
+13.35%
+</td>
+<td style="text-align:left;">
+9.42%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX10
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox3(HMG)/NPC-Sox3-ChIP-Seq(GSE33059)/Homer
+</td>
+<td style="text-align:left;">
+CCWTTGTY
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-10.060
+</td>
+<td style="text-align:right;">
+0.0018
+</td>
+<td style="text-align:left;">
+14.27%
+</td>
+<td style="text-align:left;">
+10.22%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX3
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sox2(HMG)/mES-Sox2-ChIP-Seq(GSE11431)/Homer
+</td>
+<td style="text-align:left;">
+BCCATTGTTC
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-9.464
+</td>
+<td style="text-align:right;">
+0.0028
+</td>
+<td style="text-align:left;">
+7.80%
+</td>
+<td style="text-align:left;">
+4.93%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+SOX2
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX1(Runt)/Jurkat-RUNX1-ChIP-Seq(GSE29180)/Homer
+</td>
+<td style="text-align:left;">
+AAACCACARM
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-9.353
+</td>
+<td style="text-align:right;">
+0.0029
+</td>
+<td style="text-align:left;">
+8.21%
+</td>
+<td style="text-align:left;">
+5.28%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX1
+</td>
+<td style="text-align:right;">
+2.4724692
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jun-AP1(bZIP)/K562-cJun-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+GATGASTCATCN
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-8.705
+</td>
+<td style="text-align:right;">
+0.0052
+</td>
+<td style="text-align:left;">
+1.85%
+</td>
+<td style="text-align:left;">
+0.68%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+JUN-AP1
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RUNX-AML(Runt)/CD4+-PolII-ChIP-Seq(Barski_et_al.)/Homer
+</td>
+<td style="text-align:left;">
+GCTGTGGTTW
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-8.158
+</td>
+<td style="text-align:right;">
+0.0084
+</td>
+<td style="text-align:left;">
+5.34%
+</td>
+<td style="text-align:left;">
+3.19%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+RUNX-AML
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mef2c(MADS)/GM12878-Mef2c-ChIP-Seq(GSE32465)/Homer
+</td>
+<td style="text-align:left;">
+DCYAAAAATAGM
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-8.127
+</td>
+<td style="text-align:right;">
+0.0084
+</td>
+<td style="text-align:left;">
+4.11%
+</td>
+<td style="text-align:left;">
+2.26%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+MEF2C
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fra2(bZIP)/Striatum-Fra2-ChIP-Seq(GSE43429)/Homer
+</td>
+<td style="text-align:left;">
+GGATGACTCATC
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-8.115
+</td>
+<td style="text-align:right;">
+0.0084
+</td>
+<td style="text-align:left;">
+3.18%
+</td>
+<td style="text-align:left;">
+1.59%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+FRA2
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFkB-p65-Rel(RHD)/ThioMac-LPS-Expression(GSE23622)/Homer
+</td>
+<td style="text-align:left;">
+GGAAATTCCC
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.921
+</td>
+<td style="text-align:right;">
+0.0088
+</td>
+<td style="text-align:left;">
+0.82%
+</td>
+<td style="text-align:left;">
+0.17%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+NFKB-P65-REL
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BATF(bZIP)/Th17-BATF-ChIP-Seq(GSE39756)/Homer
+</td>
+<td style="text-align:left;">
+DATGASTCAT
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.796
+</td>
+<td style="text-align:right;">
+0.0095
+</td>
+<td style="text-align:left;">
+4.41%
+</td>
+<td style="text-align:left;">
+2.53%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+BATF
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Mef2d(MADS)/Retina-Mef2d-ChIP-Seq(GSE61391)/Homer
+</td>
+<td style="text-align:left;">
+GCTATTTTTAGC
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.760
+</td>
+<td style="text-align:right;">
+0.0095
+</td>
+<td style="text-align:left;">
+1.95%
+</td>
+<td style="text-align:left;">
+0.80%
+</td>
+<td style="text-align:left;">
+gain
+</td>
+<td style="text-align:left;">
+MEF2D
+</td>
+<td style="text-align:right;">
+1.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Hnf1(Homeobox)/Liver-Foxa2-Chip-Seq(GSE25694)/Homer
+</td>
+<td style="text-align:left;">
+GGTTAAWCATTAA
+</td>
+<td style="text-align:right;">
+1e-06
+</td>
+<td style="text-align:right;">
+-13.870
+</td>
+<td style="text-align:right;">
+0.0004
+</td>
+<td style="text-align:left;">
+2.40%
+</td>
+<td style="text-align:left;">
+0.53%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HNF1
+</td>
+<td style="text-align:right;">
+3.3585259
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CLOCK(bHLH)/Liver-Clock-ChIP-Seq(GSE39860)/Homer
+</td>
+<td style="text-align:left;">
+GHCACGTG
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-9.638
+</td>
+<td style="text-align:right;">
+0.0143
+</td>
+<td style="text-align:left;">
+6.29%
+</td>
+<td style="text-align:left;">
+3.28%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CLOCK
+</td>
+<td style="text-align:right;">
+1.8356471
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.5(Homeobox)/HL1-Nkx2.5.biotin-ChIP-Seq(GSE21529)/Homer
+</td>
+<td style="text-align:left;">
+RRSCACTYAA
+</td>
+<td style="text-align:right;">
+1e-04
+</td>
+<td style="text-align:right;">
+-9.629
+</td>
+<td style="text-align:right;">
+0.0143
+</td>
+<td style="text-align:left;">
+17.51%
+</td>
+<td style="text-align:left;">
+12.34%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX2.5
+</td>
+<td style="text-align:right;">
+1.8356471
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HNF1b(Homeobox)/PDAC-HNF1B-ChIP-Seq(GSE64557)/Homer
+</td>
+<td style="text-align:left;">
+GTTAATNATTAA
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-8.665
+</td>
+<td style="text-align:right;">
+0.0189
+</td>
+<td style="text-align:left;">
+1.95%
+</td>
+<td style="text-align:left;">
+0.57%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HNF1B
+</td>
+<td style="text-align:right;">
+1.2616159
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CEBP(bZIP)/ThioMac-CEBPb-ChIP-Seq(GSE21512)/Homer
+</td>
+<td style="text-align:left;">
+ATTGCGCAAC
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.759
+</td>
+<td style="text-align:right;">
+0.0374
+</td>
+<td style="text-align:left;">
+5.24%
+</td>
+<td style="text-align:left;">
+2.81%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+CEBP
+</td>
+<td style="text-align:right;">
+1.2616159
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bHLHE40(bHLH)/HepG2-BHLHE40-ChIP-Seq(GSE31477)/Homer
+</td>
+<td style="text-align:left;">
+KCACGTGMCN
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.668
+</td>
+<td style="text-align:right;">
+0.0374
+</td>
+<td style="text-align:left;">
+4.04%
+</td>
+<td style="text-align:left;">
+1.97%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+BHLHE40
+</td>
+<td style="text-align:right;">
+1.2616159
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NFIL3(bZIP)/HepG2-NFIL3-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+VTTACGTAAYNNNNN
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.366
+</td>
+<td style="text-align:right;">
+0.0396
+</td>
+<td style="text-align:left;">
+4.79%
+</td>
+<td style="text-align:left;">
+2.55%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NFIL3
+</td>
+<td style="text-align:right;">
+1.2616159
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Usf2(bHLH)/C2C12-Usf2-ChIP-Seq(GSE36030)/Homer
+</td>
+<td style="text-align:left;">
+GTCACGTGGT
+</td>
+<td style="text-align:right;">
+1e-03
+</td>
+<td style="text-align:right;">
+-7.074
+</td>
+<td style="text-align:right;">
+0.0464
+</td>
+<td style="text-align:left;">
+3.29%
+</td>
+<td style="text-align:left;">
+1.53%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+USF2
+</td>
+<td style="text-align:right;">
+1.2616159
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NF1-halfsite(CTF)/LNCaP-NF1-ChIP-Seq(Unpublished)/Homer
+</td>
+<td style="text-align:left;">
+YTGCCAAG
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.363
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+11.83%
+</td>
+<td style="text-align:left;">
+8.46%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NF1-HALFSITE
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nkx2.2(Homeobox)/NPC-Nkx2.2-ChIP-Seq(GSE61673)/Homer
+</td>
+<td style="text-align:left;">
+BTBRAGTGSN
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.284
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+14.52%
+</td>
+<td style="text-align:left;">
+10.82%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NKX2.2
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+c-Myc(bHLH)/LNCAP-cMyc-ChIP-Seq(Unpublished)/Homer
+</td>
+<td style="text-align:left;">
+VCCACGTG
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.200
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+5.24%
+</td>
+<td style="text-align:left;">
+3.08%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+C-MYC
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ZNF652/HepG2-ZNF652.Flag-ChIP-Seq(Encode)/Homer
+</td>
+<td style="text-align:left;">
+TTAACCCTTTVNKKN
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.102
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+2.40%
+</td>
+<td style="text-align:left;">
+1.05%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+ZNF652/HEPG2-ZNF652.FLAG-CHIP-SEQ
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NPAS2(bHLH)/Liver-NPAS2-ChIP-Seq(GSE39860)/Homer
+</td>
+<td style="text-align:left;">
+KCCACGTGAC
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.100
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+8.53%
+</td>
+<td style="text-align:left;">
+5.75%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+NPAS2
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+USF1(bHLH)/GM12878-Usf1-ChIP-Seq(GSE32465)/Homer
+</td>
+<td style="text-align:left;">
+SGTCACGTGR
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-6.042
+</td>
+<td style="text-align:right;">
+0.0839
+</td>
+<td style="text-align:left;">
+4.49%
+</td>
+<td style="text-align:left;">
+2.55%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+USF1
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HLF(bZIP)/HSC-HLF.Flag-ChIP-Seq(GSE69817)/Homer
+</td>
+<td style="text-align:left;">
+RTTATGYAAB
+</td>
+<td style="text-align:right;">
+1e-02
+</td>
+<td style="text-align:right;">
+-5.774
+</td>
+<td style="text-align:right;">
+0.0907
+</td>
+<td style="text-align:left;">
+5.69%
+</td>
+<td style="text-align:left;">
+3.52%
+</td>
+<td style="text-align:left;">
+loss
+</td>
+<td style="text-align:left;">
+HLF
+</td>
+<td style="text-align:right;">
+0.6807452
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.3 (2020-10-10)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 18363)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats4    parallel  stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+ [1] kableExtra_1.3.4            plotly_4.9.3               
+ [3] ggpubr_0.4.0                ggplot2_3.3.3              
+ [5] homerkit_0.1.0              org.Mm.eg.db_3.12.0        
+ [7] AnnotationDbi_1.52.0        HDF5Array_1.18.1           
+ [9] rhdf5_2.34.0                DelayedArray_0.16.3        
+[11] Matrix_1.2-18               rtracklayer_1.49.5         
+[13] ChIPseeker_1.26.2           doParallel_1.0.16          
+[15] iterators_1.0.13            foreach_1.5.1              
+[17] DSS_2.38.0                  bsseq_1.26.0               
+[19] SummarizedExperiment_1.20.0 MatrixGenerics_1.2.1       
+[21] matrixStats_0.58.0          GenomicRanges_1.42.0       
+[23] GenomeInfoDb_1.26.7         IRanges_2.24.1             
+[25] S4Vectors_0.28.1            BiocParallel_1.24.1        
+[27] Biobase_2.50.0              BiocGenerics_0.36.0        
+[29] workflowr_1.6.2.9000       
+
+loaded via a namespace (and not attached):
+  [1] utf8_1.2.1                             
+  [2] R.utils_2.10.1                         
+  [3] tidyselect_1.1.0                       
+  [4] htmlwidgets_1.5.3                      
+  [5] RSQLite_2.2.5                          
+  [6] grid_4.0.3                             
+  [7] scatterpie_0.1.5                       
+  [8] munsell_0.5.0                          
+  [9] codetools_0.2-16                       
+ [10] withr_2.4.1                            
+ [11] colorspace_2.0-0                       
+ [12] GOSemSim_2.16.1                        
+ [13] highr_0.8                              
+ [14] knitr_1.31                             
+ [15] rstudioapi_0.13                        
+ [16] ggsignif_0.6.1                         
+ [17] DOSE_3.16.0                            
+ [18] labeling_0.4.2                         
+ [19] git2r_0.28.0                           
+ [20] GenomeInfoDbData_1.2.4                 
+ [21] polyclip_1.10-0                        
+ [22] htmltab_0.8.1                          
+ [23] bit64_4.0.5                            
+ [24] farver_2.1.0                           
+ [25] rprojroot_2.0.2                        
+ [26] vctrs_0.3.7                            
+ [27] generics_0.1.0                         
+ [28] xfun_0.19                              
+ [29] BiocFileCache_1.14.0                   
+ [30] R6_2.5.0                               
+ [31] graphlayouts_0.7.1                     
+ [32] locfit_1.5-9.4                         
+ [33] bitops_1.0-6                           
+ [34] rhdf5filters_1.2.0                     
+ [35] cachem_1.0.4                           
+ [36] fgsea_1.16.0                           
+ [37] assertthat_0.2.1                       
+ [38] promises_1.2.0.1                       
+ [39] scales_1.1.1                           
+ [40] ggraph_2.0.5                           
+ [41] enrichplot_1.10.2                      
+ [42] gtable_0.3.0                           
+ [43] tidygraph_1.2.0                        
+ [44] rlang_0.4.10                           
+ [45] systemfonts_1.0.1                      
+ [46] splines_4.0.3                          
+ [47] lazyeval_0.2.2                         
+ [48] rstatix_0.7.0                          
+ [49] broom_0.7.6                            
+ [50] abind_1.4-5                            
+ [51] BiocManager_1.30.12                    
+ [52] yaml_2.2.1                             
+ [53] reshape2_1.4.4                         
+ [54] GenomicFeatures_1.42.3                 
+ [55] backports_1.2.1                        
+ [56] httpuv_1.5.5                           
+ [57] qvalue_2.22.0                          
+ [58] tools_4.0.3                            
+ [59] ellipsis_0.3.1                         
+ [60] gplots_3.1.1                           
+ [61] jquerylib_0.1.3                        
+ [62] RColorBrewer_1.1-2                     
+ [63] Rcpp_1.0.6                             
+ [64] plyr_1.8.6                             
+ [65] sparseMatrixStats_1.2.1                
+ [66] progress_1.2.2                         
+ [67] zlibbioc_1.36.0                        
+ [68] purrr_0.3.4                            
+ [69] RCurl_1.98-1.3                         
+ [70] prettyunits_1.1.1                      
+ [71] openssl_1.4.3                          
+ [72] viridis_0.5.1                          
+ [73] cowplot_1.1.1                          
+ [74] haven_2.3.1                            
+ [75] ggrepel_0.9.1                          
+ [76] fs_1.5.0                               
+ [77] magrittr_2.0.1                         
+ [78] data.table_1.14.0                      
+ [79] openxlsx_4.2.3                         
+ [80] DO.db_2.9                              
+ [81] whisker_0.4                            
+ [82] hms_1.0.0                              
+ [83] evaluate_0.14                          
+ [84] XML_3.99-0.6                           
+ [85] rio_0.5.26                             
+ [86] readxl_1.3.1                           
+ [87] gridExtra_2.3                          
+ [88] compiler_4.0.3                         
+ [89] biomaRt_2.46.3                         
+ [90] tibble_3.1.0                           
+ [91] KernSmooth_2.23-17                     
+ [92] crayon_1.4.1                           
+ [93] shadowtext_0.0.7                       
+ [94] R.oo_1.24.0                            
+ [95] htmltools_0.5.1.1                      
+ [96] later_1.1.0.1                          
+ [97] tidyr_1.1.3                            
+ [98] lubridate_1.7.10                       
+ [99] DBI_1.1.1                              
+[100] tweenr_1.0.2                           
+[101] dbplyr_2.1.1                           
+[102] MASS_7.3-53                            
+[103] rappdirs_0.3.3                         
+[104] boot_1.3-25                            
+[105] car_3.0-10                             
+[106] readr_1.4.0                            
+[107] permute_0.9-5                          
+[108] R.methodsS3_1.8.1                      
+[109] igraph_1.2.6                           
+[110] forcats_0.5.1                          
+[111] pkgconfig_2.0.3                        
+[112] TxDb.Hsapiens.UCSC.hg19.knownGene_3.2.2
+[113] rvcheck_0.1.8                          
+[114] GenomicAlignments_1.26.0               
+[115] foreign_0.8-80                         
+[116] xml2_1.3.2                             
+[117] svglite_2.0.0                          
+[118] bslib_0.2.4                            
+[119] webshot_0.5.2                          
+[120] XVector_0.30.0                         
+[121] rvest_1.0.0                            
+[122] snakecase_0.11.0                       
+[123] stringr_1.4.0                          
+[124] digest_0.6.27                          
+[125] janitor_2.1.0                          
+[126] Biostrings_2.58.0                      
+[127] cellranger_1.1.0                       
+[128] rmarkdown_2.7                          
+[129] fastmatch_1.1-0                        
+[130] DelayedMatrixStats_1.12.3              
+[131] curl_4.3                               
+[132] Rsamtools_2.6.0                        
+[133] gtools_3.8.2                           
+[134] lifecycle_1.0.0                        
+[135] jsonlite_1.7.2                         
+[136] Rhdf5lib_1.12.1                        
+[137] carData_3.0-4                          
+[138] viridisLite_0.3.0                      
+[139] askpass_1.1                            
+[140] limma_3.46.0                           
+[141] BSgenome_1.58.0                        
+[142] fansi_0.4.2                            
+[143] pillar_1.5.1                           
+[144] lattice_0.20-41                        
+[145] fastmap_1.1.0                          
+[146] httr_1.4.2                             
+[147] plotrix_3.8-1                          
+[148] GO.db_3.12.1                           
+[149] glue_1.4.2                             
+[150] zip_2.1.1                              
+[151] bit_4.0.4                              
+[152] ggforce_0.3.3                          
+[153] stringi_1.5.3                          
+[154] sass_0.3.1                             
+[155] blob_1.2.1                             
+[156] caTools_1.18.2                         
+[157] memoise_2.0.0                          
+[158] dplyr_1.0.5                            </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
