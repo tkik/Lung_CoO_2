@@ -1,0 +1,446 @@
+---
+title: "tcga_gsea"
+
+author: "Reka Toth"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r libraries, message=FALSE, warning=FALSE, include=FALSE}
+
+
+library(MeDeCom)
+library(TCGAbiolinks)
+library(SummarizedExperiment)
+library(Hmisc)
+library(dplyr)
+library(ggsci)
+library(fgsea)
+library(cowplot)
+library(biomaRt)
+library(ggpmisc)
+
+###########libraries and functions#############
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH ="V:/"} else {
+    PATH ="/C010-projects/"}
+if (grepl("Windows", Sys.getenv("OS"))){
+  PATH_Y="N:/"} else {
+    PATH_Y="/C010-datasets/"}
+
+DATA_RNA = paste0(PATH, "Reka/33_CoO_lung/RNASeq_analysis/data/")
+DATA_WGBS = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/data/")
+
+DATA  = paste0(PATH, "Reka/33_CoO_lung/CoO_Lung_Cancer/data/")
+RESULT = "output/"
+CODE = "code/"
+CALLS = paste0(PATH_Y, "External/Sotillo_mouse_lung_cell/RNASeq_10_12/")
+
+
+
+#####functions#####
+
+convertMouseGeneList <- function(x){
+  human 	<- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  mouse 	<- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+  tmp 	<- getLDS(attributes = c("mgi_symbol"), filters = "mgi_symbol", values = x , mart = mouse, attributesL = c("hgnc_symbol"), martL = human, uniqueRows=TRUE)
+  humanx 	<- unique(tmp[,2])
+  return(humanx)
+}
+
+gseaplot2 <- function(geneSetID, title = "", color = "green",
+                      base_size = 11, rel_heights = c(1.5, 0.5, 1), subplots = 1:3,
+                      pvalue_table = FALSE, ES_geom = "line", ranks, geneSet, pvaluetable) {
+
+  ES_geom <- match.arg(ES_geom, c("line", "dot"))
+  geneList <- position <- NULL
+  gsdata2 <- do.call(rbind, lapply(geneSetID, function(id) gsInfo2(geneSetID=id, geneset = geneSet, res = ranks)))
+  p <- ggplot(gsdata2, aes_(x = ~x)) + xlab(NULL) + theme_classic(base_size) +
+    theme(panel.grid.major = element_line(colour = "grey92"),
+          panel.grid.minor = element_line(colour = "grey92"),
+          panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank()) +
+    scale_x_continuous(expand = c(0, 0))
+
+  es_layer <- geom_line(aes_(y = ~runningScore, color = ~Description),
+                        size = 1)
+
+  p.res <- p + es_layer + theme(legend.position = c(0.8, 0.8),
+                                legend.title = element_blank(), legend.background = element_rect(fill = "transparent"))
+
+  p.res <- p.res + ylab("Running Enrichment Score") +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+          axis.line.x = element_blank(), plot.margin = margin(t = 0.2,
+                                                              r = 0.2, b = 0, l = 0.2, unit = "cm"))
+  p.res <- p.res + geom_hline(yintercept=0, linetype = "dashed", color="grey")
+
+  i <- 0
+
+  for (term in unique(gsdata2$Description)) {
+    idx <- which(gsdata2$ymin != 0 & gsdata2$Description ==
+                   term)
+    gsdata2[idx, "ymin"] <- i
+    gsdata2[idx, "ymax"] <- i + 1
+    i <- i + 1
+  }
+
+  #browser()
+
+  p2 <- ggplot(gsdata2, aes_(x = ~x)) + geom_linerange(aes_(ymin = ~ymin,
+                                                            ymax = ~ymax, color = ~Description)) + xlab(NULL) + ylab(NULL) +
+    theme_classic(base_size) + theme(legend.position = "none",
+                                     plot.margin = margin(t = -0.1, b = 0, unit = "cm"),
+                                     axis.ticks = element_blank(), axis.text = element_blank(),
+                                     axis.line.x = element_blank()) + scale_x_continuous(expand = c(0,
+                                                                                                    0)) + scale_y_continuous(expand = c(0, 0))
+  df2 <- p$data
+  df2$y <- p$data$geneList[df2$x]
+  p.pos <- p + geom_segment(data = df2, aes_(x = ~x, xend = ~x,
+                                             y = ~y, yend = 0), color = "grey")
+  p.pos <- p.pos + ylab("Correlation Coefficient") + xlab("Rank in Ordered Dataset") +
+    theme(plot.margin = margin(t = -0.1, r = 0.2, b = 0.2,
+                               l = 0.2, unit = "cm"))+scale_x_continuous(expand = c(0, 0))
+
+  if (!is.null(title) && !is.na(title) && title != "")
+    p.res <- p.res + ggtitle(title)
+
+  if (length(color) == length(geneSetID)) {
+    p.res <- p.res + scale_color_manual(labels= paste0(c(pvaluetable[geneSetID,"pathway"]$pathway), ", p value= ", round(c(pvaluetable[geneSetID , "pval"])$pval, digits = 3)),
+                                        values = color)
+    if (length(color) == 1) {
+      p.res <- p.res + theme(legend.position = "none")
+      p2 <- p2 + scale_color_manual(values = "black")
+    }
+    else {
+      p2 <- p2 + scale_color_manual(values = color)
+    }
+  }
+#browser()
+  if (pvalue_table) {
+    pd <- pvaluetable[geneSetID , c("pathway", "pval",
+                                    "padj")]
+    pd <- pd[order(pd[, 1], decreasing = FALSE), ]
+    #rownames(pd) <- pd$pathway
+    #pd <- pd[, -1]
+    #pd <- round(pd, 4)
+    pd <- pd %>% 
+      as_tibble(pd) %>%
+      mutate_at(2:3, round,4)
+    df <- tibble(x = 20000, y = 0.8, tb = list(pd))
+   #tp <- enrichplot:::tableGrob2(pd, p.res)
+    tp <- geom_table(data = df, aes(x = x, y = y, label = tb),
+                table.theme = ttheme_gtminimal)
+    p.res <- p.res + theme(legend.position = "top") + tp
+
+  }
+
+  plotlist <- list(p.res, p2, p.pos)[subplots]
+  n <- length(plotlist)
+  plotlist[[n]] <- plotlist[[n]] + theme(axis.line.x = element_line(),
+                                         axis.ticks.x = element_line(), axis.text.x = element_text())
+  if (length(rel_heights) > length(subplots))
+    rel_heights <- rel_heights[subplots]
+  plot_grid(plotlist = plotlist, ncol = 1, align = "v",
+            rel_heights = rel_heights)
+
+
+}
+
+
+
+gsInfo2 <-  function (geneset=marker_lists_short, geneSetID, res=lmc1_rank)
+{
+  geneList <- res
+  if (is.numeric(geneSetID))
+    geneSetID <- names(geneset)[geneSetID]
+  geneSet <- geneset[[geneSetID]]
+  exponent <- 1
+  df <- DOSE:::gseaScores(res, geneSet, exponent, fortify = TRUE)
+  df$ymin <- 0
+  df$ymax <- 0
+  pos <- df$position == 1
+  h <- diff(range(df$runningScore))/20
+  df$ymin[pos] <- -h
+  df$ymax[pos] <- h
+  df$geneList <- res
+  df$Description <- geneSetID
+  return(df)
+}
+
+#######
+
+```
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+
+load(file.path(DATA, "FactorViz_outputs/medecom_set.RData"))
+load(file.path(DATA, "FactorViz_outputs/ann_S.RData"))
+load(file.path(DATA, "FactorViz_outputs/ann_C.RData"))
+load(file.path(DATA, "FactorViz_outputs/meth_data.RData"))
+
+mypal = pal_igv()(27)
+
+
+meth_data <- cbind(ann.C[,1:3], meth.data)
+meth_data <- makeGRangesFromDataFrame(meth_data, keep.extra.columns = T)
+
+
+###don't need the sites, but the promoters!!
+promoters <- rnb.get.annotation("promoters")
+promoters <- as.data.frame(unlist(promoters))
+
+promoters$gene <- gsub("chr[[:digit:]]+.", "", rownames(promoters))
+promoters <- makeGRangesFromDataFrame(promoters, keep.extra.columns = T)
+promoters <- promoters[!is.na(promoters$symbol)]
+
+overlaps <- findOverlaps(meth_data, promoters, select="all")
+overlaps <- overlaps[!duplicated(queryHits(overlaps)),]
+
+meth_data$gene <- NA
+meth_data$gene[queryHits(overlaps)] <- promoters$symbol[subjectHits(overlaps)]
+meth_data <- meth_data[!is.na(meth_data$gene),]
+gene_average <- aggregate(meth_data, as.matrix(mcols(meth_data)[grep("TCGA", colnames(mcols(meth_data)))]) ~ gene, mean)
+
+
+#summarized_regions <- list()
+
+#for (i in unique(subjectHits(overlaps))){
+#  summarized_regions[[i]] <- cbind(as.data.frame(sites[i,]), t(as.data.frame(apply(mcols(meth_data)[queryHits(overlaps)[subjectHits(overlaps)==i],], 2, mean))))
+#}
+
+#summarized_regions <- do.call(rbind.data.frame, summarized_regions)
+
+
+
+
+
+
+
+prop <- getProportions(medecom.set, lambda=0.0001, K=7)
+colnames(prop) <- colnames(meth.data)
+
+
+gene_average <- gene_average %>%
+  as.data.frame() %>%
+  "[<-"(paste0("LMC", 1:7), value = NA_real_) %>%
+  "[<-"(paste0("LMC", 1:7, "_p"), value = NA_real_)
+
+
+for (LMCs in paste0("LMC", 1:7)){
+cat(LMCs)
+  est <-lapply(1:nrow(gene_average), function(x)
+    cor.test(prop[LMCs,],  as.numeric(gene_average[x,grep("TCGA", colnames(gene_average))]), method = "pears"))
+  gene_average[,LMCs] <- unlist(lapply(est, function(x) x$estimate))
+  gene_average[,paste0(LMCs, "_p")] <- -log10(unlist(lapply(est, function(x) x$p.value)))
+
+}
+
+df <- gene_average[!is.na(gene_average$gene),]
+
+saveRDS(df, file=paste0(DATA, "gsea_tcga_ranks.RDS"))
+
+```
+
+
+```{r}
+df <- readRDS(file=paste0(DATA, "gsea_tcga_ranks.RDS"))
+
+
+
+human_lung_cell_atlas_all_markers <- read.delim("V:/Reka/33_CoO_lung/CoO_Lung_Cancer/data/human_lung_cell_atlas_all_markers.txt")
+new_list <- lapply(human_lung_cell_atlas_all_markers, function(x) x[x %in% df$gene])
+names(new_list) <- colnames(human_lung_cell_atlas_all_markers)
+
+
+p <- list()
+fgseaRes <- list()
+
+for (lmcs in paste0("LMC", 1:7)){
+
+
+  #cat("Investigating ", lmcs, " \n")
+
+  gsea_rank <-  df %>%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, "_p")))) %>%
+    mutate(gene=replace(gene, duplicated(gene), NA))%>%
+    dplyr::filter(!is.na(gene)) %>%
+    arrange(get(lmcs))
+
+  rank <- gsea_rank[,lmcs]
+  names(rank) <- gsea_rank$gene
+
+
+    gsdata2 <- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+
+    fgseaRes[[lmcs]] <- fgsea(pathways = new_list,
+                      stats    = rank,
+                      minSize  = 3,
+                      maxSize  = 1000, nperm=1000)
+
+   # fgseaRes[[lmcs]]$pathway <- factor(fgseaRes[[lmcs]]$pathway, levels = paste0("Cluster.", 1:14))
+    gsdata3 <- gsdata2 %>%
+      inner_join(fgseaRes[[lmcs]][,c("pathway", "pval")], by= c("Description"="pathway")) %>%
+      mutate(significant=ifelse(pval<0.05, " *", NA)) %>%
+      mutate(Description=factor(Description, levels = fgseaRes[[lmcs]]$pathway[order(fgseaRes[[lmcs]]$ES, decreasing = T)]))
+
+    p[[lmcs]] <- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low="darkred", mid="white", high="darkblue")+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  
+    
+# gsea_plot <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = "line",
+#                        title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+ 
+# gsea_plot <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = "line",
+#                        title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+ 
+ #i <- i+1
+
+}
+
+```
+
+
+```{r}
+
+#own_markers <- read.delim(paste0(DATA, "cluster_markers_gsea.txt"))
+#new_list <- lapply(own_markers, convertMouseGeneList)
+
+#saveRDS(new_list, paste0(DATA, "cluster_markers_gsea_human.RDS"))
+new_list <- readRDS(paste0(DATA, "cluster_markers_gsea_human.RDS"))
+
+new_list <- lapply(new_list, function(x) x[x %in% df$gene])
+#names(new_list) <- colnames(own_markers)
+gsea_plot <- list()
+
+for (lmcs in paste0("LMC", 1:7)){
+  
+  
+  #cat("Investigating ", lmcs, " \n")
+  
+  gsea_rank <-  df %>%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, "_p")))) %>%
+    mutate(gene=replace(gene, duplicated(gene), NA))%>%
+    dplyr::filter(!is.na(gene)) %>%
+    arrange(get(lmcs))
+  
+  rank <- gsea_rank[,lmcs]
+  names(rank) <- gsea_rank$gene
+  
+  
+  gsdata2 <- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+  
+  fgseaRes_clust <- fgsea(pathways = new_list,
+                    stats    = rank,
+                    minSize  = 3,
+                    maxSize  = 1000, nperm=1000)
+  
+  gsdata3 <- gsdata2 %>%
+    inner_join(fgseaRes_clust[,c("pathway", "pval")], by= c("Description"="pathway")) %>%
+    mutate(significant=ifelse(pval<0.05, " *", NA)) %>%
+    mutate(Description=factor(Description, levels = fgseaRes_clust$pathway[order(fgseaRes_clust$ES, decreasing = T)]))
+  
+ # p <- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low="darkred", mid="white", high="darkblue")+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  #print(p)
+#  gsea_plot <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = "line",
+                    #     title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+fgseaRes_clust$pathway <- factor(fgseaRes_clust$pathway, levels = paste0("Cluster.", 1:14))
+  gsea_plot[[lmcs]] <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = "line",title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes_clust)
+ # ggsave(gsea_plot, filename=paste0(DATA_WGBS, "../output/tcga_gsea_plot_", lmcs,  "_p_clust.png"),
+ #        width = 12, height = 10)
+  #i <- i+1
+  
+}
+
+```
+
+```{r}
+
+
+#tammela_markers <- read.delim(paste0(DATA, "cluster_markers_tammela_paper.txt"))
+#new_list <- lapply(tammela_markers, convertMouseGeneList)
+
+#saveRDS(new_list, paste0(DATA, "cluster_markers_tammela_human.RDS"))
+new_list <- readRDS(paste0(DATA, "cluster_markers_tammela_human.RDS"))
+
+new_list <- lapply(new_list, function(x) x[x %in% df$gene])
+#names(new_list) <- colnames(own_markers)
+tammela_plot <- list()
+
+for (lmcs in paste0("LMC", 1:7)){
+  
+  
+  #cat("Investigating ", lmcs, " \n")
+  
+  gsea_rank <-  df %>%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, "_p")))) %>%
+    mutate(gene=replace(gene, duplicated(gene), NA))%>%
+    dplyr::filter(!is.na(gene)) %>%
+    arrange(get(lmcs))
+  
+  rank <- gsea_rank[,lmcs]
+  names(rank) <- gsea_rank$gene
+  
+  
+  gsdata2 <- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+  
+  fgseaRes_clust <- fgsea(pathways = new_list,
+                    stats    = rank,
+                    minSize  = 3,
+                    maxSize  = 1000, nperm=1000)
+  fgseaRes_clust$pathway <- factor(fgseaRes_clust$pathway, levels = paste0("Cluster.", 1:12))
+
+  gsdata3 <- gsdata2 %>%
+    inner_join(fgseaRes_clust[,c("pathway", "pval")], by= c("Description"="pathway")) %>%
+    mutate(significant=ifelse(pval<0.05, " *", NA)) %>%
+    mutate(Description=factor(Description, levels = fgseaRes_clust$pathway[order(fgseaRes_clust$ES, decreasing = T)]))
+  
+ # p <- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low="darkred", mid="white", high="darkblue")+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  #print(p)
+#  gsea_plot <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = "line",
+                    #     title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+
+  tammela_plot[[lmcs]] <- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = "line",title = paste(lmcs, " correlation"), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes_clust)
+ # ggsave(gsea_plot, filename=paste0(DATA_WGBS, "../output/tcga_gsea_plot_", lmcs,  "_p_clust.png"),
+ #        width = 12, height = 10)
+  #i <- i+1
+  
+}
+
+
+```
+
+
+
+# Plots by LMCs{.tabset .tabset-fade .tabset-pills} 
+
+```{r, results='asis', fig.height=12}
+
+
+for (lmcs in paste0("LMC", 1:7)){
+
+    cat("\n")
+  cat("## LMC: ",
+      lmcs,
+      "\n")
+  print(knitr::kable(fgseaRes[[lmcs]][fgseaRes[[lmcs]]$pval<0.05,1:3]))
+   cat("\n")
+print(p[[lmcs]])
+
+  
+   cat("\n")
+   cat("Markers from own paper")
+  print(gsea_plot[[lmcs]])
+   cat("\n")
+   cat("Markers from the Tammela paper")
+     print(tammela_plot[[lmcs]])
+   cat("\n")
+print(ggplot() + theme_void())
+ cat("\n")
+}  
+  
+    
+  
+```
+
