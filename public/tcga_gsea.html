@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Reka Toth" />
+
+
+<title>tcga_gsea</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CoO_Lung_Cancer</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://gitlab.com/tkike/Lung_CoO">
+    <span class="fa fa-gitlab"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">tcga_gsea</h1>
+<h4 class="author">Reka Toth</h4>
+<h4 class="date">01 July, 2021</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-07-01
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>CoO_Lung_Cancer/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2.9000). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20191010code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20191010)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20191010code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20191010)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it difficult for you and others to run your code on a different machine. Change the absolute path(s) below to the suggested relative path(s) to make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+V:/Reka/33_CoO_lung/CoO_Lung_Cancer/data/human_lung_cell_atlas_all_markers.txt
+</td>
+<td style="text-align:left;">
+data/human_lung_cell_atlas_all_markers.txt
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree5214af3142c57c2ea9dc55304671195a65ee0405targetblank5214af3a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/5214af3142c57c2ea9dc55304671195a65ee0405" target="_blank">5214af3</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree5214af3142c57c2ea9dc55304671195a65ee0405targetblank5214af3a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/5214af3142c57c2ea9dc55304671195a65ee0405" target="_blank">5214af3</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.Rhistory
+    Ignored:    data/DML_results_MsCCSP_MsSPC_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_MsSPC_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsCCSP_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_control_comparison.RDS
+    Ignored:    data/DML_results_MsSPC_tumor_rfp_tumor_comparison.RDS
+    Ignored:    data/DMLs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/DMRs_noMsCCSP_control01_smoothed.RDS
+    Ignored:    data/QC_data.RData
+    Ignored:    data/annotation_table_TAGWGBS_02_10.txt
+    Ignored:    data/genotypes_all.txt
+    Ignored:    data/methrix_object.RDS
+    Ignored:    data/no_snps_methrix.RDS
+    Ignored:    data/promoter_beds/
+    Ignored:    data/snp_data_5_strains_14_10.RDS
+    Ignored:    data/snp_ranges.bed
+    Ignored:    data/snp_ranges.bedGraph
+    Ignored:    docs/01_read_in_MethylDackel.html
+    Ignored:    docs/02-DMR_calling.html
+    Ignored:    docs/DMR_report.html
+    Ignored:    docs/PCA_plots.html
+    Ignored:    docs/QC_report.html
+    Ignored:    docs/about.html
+    Ignored:    docs/index.html
+    Ignored:    docs/license.html
+    Ignored:    docs/methrix_reports.html
+    Ignored:    docs/site_libs/jqueryui-1.11.4/index.html
+    Ignored:    enrichment_new_groups/
+
+Untracked files:
+    Untracked:  analysis/02-DMR_calling.Rmd
+    Untracked:  analysis/02-DMR_calling_new_groups_norfp.Rmd
+    Untracked:  analysis/DMR_enrichment.Rmd
+    Untracked:  analysis/DMR_report.Rmd
+    Untracked:  analysis/DMR_report_selected.Rmd
+    Untracked:  analysis/Figures.Rmd
+    Untracked:  analysis/LMC_annotation.Rmd
+    Untracked:  analysis/LMC_based_enhancer_enrichment.R
+    Untracked:  analysis/LMC_promoters.Rmd
+    Untracked:  analysis/MeDeCom.Rmd
+    Untracked:  analysis/MeDeCom_MsCCSP.Rmd
+    Untracked:  analysis/MeDeCom_all.Rmd
+    Untracked:  analysis/MeDeCom_all_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/MeDeCom_controls.Rmd
+    Untracked:  analysis/MeDeCom_controls_no_MsCCSP_c4.Rmd
+    Untracked:  analysis/MeDeCom_poised_enhancers.Rmd
+    Untracked:  analysis/MeDeCom_results_norfp.Rmd
+    Untracked:  analysis/PCA_plots.Rmd
+    Untracked:  analysis/PCA_plots_selected.Rmd
+    Untracked:  analysis/QC_report.Rmd
+    Untracked:  analysis/cNMF.Rmd
+    Untracked:  analysis/candiate_region_plot.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram_new_groups.Rmd
+    Untracked:  analysis/candiate_region_plot_histogram_new_groups_rfp.Rmd
+    Untracked:  analysis/candidate_selection.Rmd
+    Untracked:  analysis/combined_candidate_plots.Rmd
+    Untracked:  analysis/combined_differential.Rmd
+    Untracked:  analysis/combined_enhancer_plots.Rmd
+    Untracked:  analysis/dmr_calling_methrix_17_07_noMsCCSP_control01_smoothed.R
+    Untracked:  analysis/enhancers.rmd
+    Untracked:  analysis/go_region_plot_histogram.Rmd
+    Untracked:  analysis/homer_all.Rmd
+    Untracked:  analysis/homer_enhancers.Rmd
+    Untracked:  analysis/homer_new_groups_norfp.Rmd
+    Untracked:  analysis/prepare_homer.Rmd
+    Untracked:  analysis/prepare_homer_alldmr.Rmd
+    Untracked:  analysis/prepare_homer_alldmr_new.Rmd
+    Untracked:  analysis/prepare_homer_alldmr_new_norfp.Rmd
+    Untracked:  analysis/prepare_medecom_regions.Rmd
+    Untracked:  analysis/prepare_medecom_regions_norfp.Rmd
+    Untracked:  analysis/prepare_promoters_tca.Rmd
+    Untracked:  analysis/tcga_medecom.Rmd
+    Untracked:  code/EpiScore.R
+    Untracked:  code/Figure_1.R
+    Untracked:  code/Figure_2.R
+    Untracked:  code/Figure_3.R
+    Untracked:  code/LMC_correlation_enrichment.R
+    Untracked:  code/LMC_enrichment.R
+    Untracked:  code/color_palette.R
+    Untracked:  code/gviz_region_plot_figures.R
+    Untracked:  code/homer_analysis_norfp.sh
+    Untracked:  code/medecom_poised_enhancers_all.R
+    Untracked:  code/medecom_poised_enhancers_all_hopx.R
+    Untracked:  code/medecom_poised_enhancers_all_hopx_no1.R
+    Untracked:  code/medecom_poised_enhancers_all_hopx_norfp.R
+    Untracked:  code/medecom_poised_enhancers_all_norfp.R
+    Untracked:  code/medecom_poised_enhancers_all_smoothed.R
+    Untracked:  code/plot_pca_manual.R
+    Untracked:  code/presentation_heatmap.R
+    Untracked:  code/shiny_app/
+    Untracked:  code/tcga_gsea.R
+    Untracked:  code/tcga_medecom_corr.R
+    Untracked:  code/tcga_medecom_correlation.RData
+    Untracked:  code/tcga_shiny.R
+    Untracked:  data/.gitignore
+    Untracked:  data/AU040972cand.pdf
+    Untracked:  data/CD74cand.pdf
+    Untracked:  data/Cyp2f2cand.pdf
+    Untracked:  data/DML_results_MsCCSP_MsSPC_tumor_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_MsSPC_control_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_MsSPC_tumor_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsCCSP_tumor_control_comparison.RDS
+    Untracked:  data/DML_results_new_group_MsSPC_tumor_control_comparison.RDS
+    Untracked:  data/DMLs_new_groups.RDS
+    Untracked:  data/DMRs_new_groups.RDS
+    Untracked:  data/E-ENAD-15-marker-genes-files_Mouse_cell_atlas.zip
+    Untracked:  data/E-ENAD-15.marker_genes_inferred_cell_type_-_ontology_labels.tsv
+    Untracked:  data/ENCODE_SCREEN_lung_postnatal_0_CRE.7group.bed
+    Untracked:  data/ENdb_target_gene.txt
+    Untracked:  data/FactorViz_outputs.zip
+    Untracked:  data/FactorViz_outputs/
+    Untracked:  data/Frem1cand.pdf
+    Untracked:  data/Fukazawa_2016_Sox2_targets.xlsx
+    Untracked:  data/Itih4cand.pdf
+    Untracked:  data/Itih4cand_data.RDS
+    Untracked:  data/JASPAR_2020_matrix_clustering_vertebrates_archive.zip
+    Untracked:  data/Krt19cand.pdf
+    Untracked:  data/MeDeCom_MCCSP_SPC_prepared_filt.rds
+    Untracked:  data/MsCCPS_MsSPC_enhancers.rds
+    Untracked:  data/MsCCPS_MsSPC_promoters.rds
+    Untracked:  data/MsCCSP_MsSPC_tumor_different_genes.txt
+    Untracked:  data/MsCCSP_tumor_MsCCSP_normal_different_genes.txt
+    Untracked:  data/MsSPC_normal_MsCCSP_normal_different_genes.txt
+    Untracked:  data/MsSPC_tumor_MsCCSP_tumor_different_genes.txt
+    Untracked:  data/MsSPC_tumor_MsSPC_normal_different_genes.txt
+    Untracked:  data/Nkx2-1cand.pdf
+    Untracked:  data/Nr2f2cand.pdf
+    Untracked:  data/QC_data_13_05.RData
+    Untracked:  data/Scgb1a1cand.pdf
+    Untracked:  data/Scgb1a1cand_data.RDS
+    Untracked:  data/Scgb3a2cand.pdf
+    Untracked:  data/Scgb3a2cand_data.RDS
+    Untracked:  data/Sftpccand.pdf
+    Untracked:  data/Sftpccand_data.RDS
+    Untracked:  data/Sox2_target.tsv
+    Untracked:  data/Sox2cand.pdf
+    Untracked:  data/Sox2cand_data.RDS
+    Untracked:  data/all_Ts.RDS
+    Untracked:  data/all_metascape report.zip
+    Untracked:  data/all_samples_enhancers.rds
+    Untracked:  data/all_samples_promoters.rds
+    Untracked:  data/annotated_regions/
+    Untracked:  data/annotation_table_TAGWGBS_16_2_2021.txt
+    Untracked:  data/annotation_table_TAGWGBS_17_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_24_2.txt
+    Untracked:  data/annotation_table_TAGWGBS_31_1.txt
+    Untracked:  data/bedgraphs/
+    Untracked:  data/beds/
+    Untracked:  data/beds_new_groups/
+    Untracked:  data/bivalent_enhancers_plot.pdf
+    Untracked:  data/candidate_genes.txt
+    Untracked:  data/candidate_promoter_methylation.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed.RDS
+    Untracked:  data/candidate_promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/candidate_promoter_smoothed_bsseq.RDS
+    Untracked:  data/cell_type_markers.gmt
+    Untracked:  data/cellphonedb_example_data.zip
+    Untracked:  data/cluster_markers_gsea.txt
+    Untracked:  data/cluster_markers_gsea_human.RDS
+    Untracked:  data/cluster_markers_gsea_human.txt
+    Untracked:  data/cluster_markers_tammela_human.RDS
+    Untracked:  data/cluster_markers_tammela_human.txt
+    Untracked:  data/cluster_markers_tammela_paper.txt
+    Untracked:  data/comparisons.RDS
+    Untracked:  data/dmrs/
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt
+    Untracked:  data/enc_epd_enhc_gene_mm10.txt.gz
+    Untracked:  data/enc_epd_enhc_gene_mm10_int.txt
+    Untracked:  data/enhancer_beds/
+    Untracked:  data/enhancers/
+    Untracked:  data/enhancers_CCSP_genes.txt
+    Untracked:  data/enhancers_LMC1_genes.txt
+    Untracked:  data/enhancers_LMC2_genes.txt
+    Untracked:  data/enhancers_LMC3_genes.txt
+    Untracked:  data/enhancers_LMC4_genes.txt
+    Untracked:  data/enhancers_genes.RDS
+    Untracked:  data/enhancers_genes.txt
+    Untracked:  data/enhancers_genes.xlsx
+    Untracked:  data/enhancers_genes_nobg.txt
+    Untracked:  data/enhancers_genes_nobg.xlsx
+    Untracked:  data/figures/
+    Untracked:  data/ge_dmr_candidates.rds
+    Untracked:  data/gsea_tcga_ranks.RDS
+    Untracked:  data/homer_res/
+    Untracked:  data/homer_res_new_groups/
+    Untracked:  data/human_lung_cell_atlas_all_markers.txt
+    Untracked:  data/human_lung_cell_atlas_all_markers_epithelial.txt
+    Untracked:  data/human_lung_cell_atlas_all_markers_short.txt
+    Untracked:  data/interactive_trees/
+    Untracked:  data/labels.RDS
+    Untracked:  data/linked_promoter_TSS.xlsx
+    Untracked:  data/lung_cell_atlas_other_markers.txt
+    Untracked:  data/medecom/
+    Untracked:  data/medecom_MsCCSP.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_enhancers.RDS
+    Untracked:  data/medecom_MsCCSP_MsSPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_SPC_promoters.RDS
+    Untracked:  data/medecom_MsCCSP_promoters.RDS
+    Untracked:  data/medecom_all.RDS
+    Untracked:  data/medecom_all_no_MsCCSP_c4.RDS
+    Untracked:  data/medecom_controls.RDS
+    Untracked:  data/medecom_proportions_all.RDS
+    Untracked:  data/medecom_proportions_all_HOPX.RDS
+    Untracked:  data/medecom_random_sites.RDS
+    Untracked:  data/medecom_random_sites_all.RDS
+    Untracked:  data/metascape_result.tju3krgk_.xlsx
+    Untracked:  data/methylation_coversion.txt
+    Untracked:  data/mm9ToMm10.over.chain
+    Untracked:  data/mm9ToMm10.over.chain.gz
+    Untracked:  data/most_variable_in_controls.rds
+    Untracked:  data/new_tumor_groups.RDS
+    Untracked:  data/new_tumor_groups_HOPX.RDS
+    Untracked:  data/nkx2_1_enrichment/
+    Untracked:  data/no_snpsXY_methrix.RDS
+    Untracked:  data/no_snps_methrix.qs
+    Untracked:  data/norfp/
+    Untracked:  data/promoter_bsseq_smoothed.RDS
+    Untracked:  data/promoter_methylation.RDS
+    Untracked:  data/promoter_methylation_smoothed.RDS
+    Untracked:  data/promoter_methylation_smoothed_methrix.RDS
+    Untracked:  data/random_sites.rds
+    Untracked:  data/random_sites_all.rds
+    Untracked:  data/removed_sites_MeDeCom.RDS
+    Untracked:  data/removed_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/removed_sites_all_MeDeCom.RDS
+    Untracked:  data/removed_sites_control_MeDeCom.RDS
+    Untracked:  data/selected_markers_MCA.txt
+    Untracked:  data/selected_sites_MeDeCom.RDS
+    Untracked:  data/selected_sites_MsCCSP_MeDeCom.RDS
+    Untracked:  data/selected_sites_all_MeDeCom.RDS
+    Untracked:  data/selected_sites_control_MeDeCom.RDS
+    Untracked:  data/sequencing_annotation_table.csv
+    Untracked:  data/target_genes_nkx2-1.txt
+    Untracked:  data/target_genes_nkx2-1.xlsx
+    Untracked:  data/tcga_laml_ge.RDS
+    Untracked:  data/tcga_luad_ge.RDS
+    Untracked:  data/tcga_medecom_corr_LMC1.tiff
+    Untracked:  data/tcga_medecom_corr_LMC2.tiff
+    Untracked:  data/tcga_medecom_corr_LMC3.tiff
+    Untracked:  data/tcga_medecom_corr_LMC4.tiff
+    Untracked:  data/tcga_medecom_corr_LMC5.tiff
+    Untracked:  data/tcga_medecom_corr_LMC6.tiff
+    Untracked:  data/tcga_medecom_corr_LMC7.tiff
+    Untracked:  data/tcga_medecom_correlation.RData
+    Untracked:  data/~$Fukazawa_2016_Sox2_targets.xlsx
+    Untracked:  data/~$linked_promoter_TSS.xlsx
+    Untracked:  desktop.ini
+    Untracked:  docs/.gitignore
+    Untracked:  docs/DMR_enrichment.html
+    Untracked:  docs/DMR_report_selected.html
+    Untracked:  docs/Figure_1/
+    Untracked:  docs/Figure_2/
+    Untracked:  docs/Figure_3/
+    Untracked:  docs/Figures.html
+    Untracked:  docs/PCA_plots_selected.html
+    Untracked:  docs/QC_report/
+    Untracked:  docs/QC_report_no_SNPs/
+    Untracked:  docs/candiate_region_plot.html
+    Untracked:  docs/candiate_region_plot_histogram.html
+    Untracked:  docs/figure/DMR_enrichment.Rmd/
+    Untracked:  docs/figure/DMR_report.Rmd/
+    Untracked:  docs/figure/DMR_report_new_groups.Rmd/
+    Untracked:  docs/figure/DMR_report_selected.Rmd/
+    Untracked:  docs/figure/Figures.Rmd/
+    Untracked:  docs/figure/MeDeCom_all.Rmd/
+    Untracked:  docs/figure/MeDeCom_all_no_MsCCSP_c4.Rmd/
+    Untracked:  docs/figure/MeDeCom_controls.Rmd/
+    Untracked:  docs/figure/PCA_plots.Rmd/
+    Untracked:  docs/figure/PCA_plots_selected.Rmd/
+    Untracked:  docs/figure/prepare_medecom_regions.Rmd/
+    Untracked:  docs/medecom_CCSP_controls_plot.RDS
+    Untracked:  docs/plots_for_figures/
+    Untracked:  docs/prepare_homer.html
+    Untracked:  docs/prepare_medecom_regions.html
+    Untracked:  docs/site_libs/crosstalk-1.1.0.1/
+    Untracked:  output/DML_results_new_groups.RDS
+    Untracked:  output/QC_report.html
+    Untracked:  output/QC_report/MC_per_chr.tsv
+    Untracked:  output/QC_report/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsHOPX_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report/contig_lens.tsv
+    Untracked:  output/QC_report/global_MC_per_samp.tsv
+    Untracked:  output/QC_report/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_deprecated/
+    Untracked:  output/QC_report_no_SNPs/MC_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_control07_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsCCSP_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsHOPX_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsKrt5_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control05_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_control06_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor01_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor02_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03.rfp_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor03_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/MsSPC_tumor04_density.tsv.gz
+    Untracked:  output/QC_report_no_SNPs/contig_lens.tsv
+    Untracked:  output/QC_report_no_SNPs/global_MC_per_samp.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_by_all_samples.tsv
+    Untracked:  output/QC_report_no_SNPs/n_covered_per_chr.tsv
+    Untracked:  output/QC_report_no_SNPs_deprecated/
+    Untracked:  output/Thumbs.db
+    Untracked:  output/annotated_regions/
+    Untracked:  output/candidate_regions_hist/
+    Untracked:  output/candidate_regions_point/
+    Untracked:  output/enrichment_res/
+    Untracked:  output/homer/
+    Untracked:  output/poised_enhancers_all_heatmap.pdf
+    Untracked:  output/poised_enhancers_controls_heatmap.pdf
+    Untracked:  output/poised_enhancers_heatmap.pdf
+    Untracked:  output/tca_res.RDS
+    Untracked:  output/tca_res_candidate_promoters.RDS
+    Untracked:  output/tca_res_promoter_candidate.RDS
+    Untracked:  output/tcga_gsea_plot_LMC1_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC1_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC1_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC1_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC1_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC1_short.png
+    Untracked:  output/tcga_gsea_plot_LMC2_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC2_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC2_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC2_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC2_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC2_short.png
+    Untracked:  output/tcga_gsea_plot_LMC3_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC3_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC3_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC3_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC3_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC3_short.png
+    Untracked:  output/tcga_gsea_plot_LMC4_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC4_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC4_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC4_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC4_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC4_short.png
+    Untracked:  output/tcga_gsea_plot_LMC5_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC5_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC5_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC5_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC5_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC5_short.png
+    Untracked:  output/tcga_gsea_plot_LMC6_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC6_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC6_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC6_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC6_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC6_short.png
+    Untracked:  output/tcga_gsea_plot_LMC7_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC7_p_clust.png
+    Untracked:  output/tcga_gsea_plot_LMC7_p_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC7_p_short.png
+    Untracked:  output/tcga_gsea_plot_LMC7_short.pdf
+    Untracked:  output/tcga_gsea_plot_LMC7_short.png
+    Untracked:  output/tcga_heatmaps_LMC1.pdf
+    Untracked:  output/tcga_heatmaps_LMC1_clust.png
+    Untracked:  output/tcga_heatmaps_LMC1_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC1_short.png
+    Untracked:  output/tcga_heatmaps_LMC2.pdf
+    Untracked:  output/tcga_heatmaps_LMC2_clust.png
+    Untracked:  output/tcga_heatmaps_LMC2_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC2_short.png
+    Untracked:  output/tcga_heatmaps_LMC3.pdf
+    Untracked:  output/tcga_heatmaps_LMC3_clust.png
+    Untracked:  output/tcga_heatmaps_LMC3_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC3_short.png
+    Untracked:  output/tcga_heatmaps_LMC4.pdf
+    Untracked:  output/tcga_heatmaps_LMC4_clust.png
+    Untracked:  output/tcga_heatmaps_LMC4_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC4_short.png
+    Untracked:  output/tcga_heatmaps_LMC5.pdf
+    Untracked:  output/tcga_heatmaps_LMC5_clust.png
+    Untracked:  output/tcga_heatmaps_LMC5_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC5_short.png
+    Untracked:  output/tcga_heatmaps_LMC6.pdf
+    Untracked:  output/tcga_heatmaps_LMC6_clust.png
+    Untracked:  output/tcga_heatmaps_LMC6_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC6_short.png
+    Untracked:  output/tcga_heatmaps_LMC7.pdf
+    Untracked:  output/tcga_heatmaps_LMC7_clust.png
+    Untracked:  output/tcga_heatmaps_LMC7_short.pdf
+    Untracked:  output/tcga_heatmaps_LMC7_short.png
+
+Unstaged changes:
+    Modified:   analysis/02-DMR_calling_new_groups.Rmd
+    Modified:   analysis/DMR_report_new_groups.Rmd
+    Modified:   analysis/MeDeCom_results.Rmd
+    Modified:   analysis/_site.yml
+    Modified:   analysis/homer_new_groups.Rmd
+    Modified:   analysis/index.Rmd
+    Modified:   code/MeDeCom_poised_enhancers.R
+    Modified:   code/QC_report.Rmd
+    Modified:   code/gviz_region_plot.R
+    Modified:   code/homer_analysis.sh
+    Modified:   output/QC_report/methrix_reports.html
+    Modified:   output/QC_report_no_SNPs/methrix_reports.html
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were made to the R Markdown (<code>analysis/tcga_gsea.Rmd</code>) and HTML (<code>public/tcga_gsea.html</code>) files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/tkike/Lung_CoO/blob/5214af3142c57c2ea9dc55304671195a65ee0405/analysis/tcga_gsea.Rmd" target="_blank">5214af3</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-07-01
+</td>
+<td>
+wflow_publish(“analysis/tcga_gsea.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<pre class="r"><code>load(file.path(DATA, &quot;FactorViz_outputs/medecom_set.RData&quot;))
+load(file.path(DATA, &quot;FactorViz_outputs/ann_S.RData&quot;))
+load(file.path(DATA, &quot;FactorViz_outputs/ann_C.RData&quot;))
+load(file.path(DATA, &quot;FactorViz_outputs/meth_data.RData&quot;))
+
+mypal = pal_igv()(27)
+
+
+meth_data &lt;- cbind(ann.C[,1:3], meth.data)
+meth_data &lt;- makeGRangesFromDataFrame(meth_data, keep.extra.columns = T)
+
+
+###don&#39;t need the sites, but the promoters!!
+promoters &lt;- rnb.get.annotation(&quot;promoters&quot;)
+promoters &lt;- as.data.frame(unlist(promoters))
+
+promoters$gene &lt;- gsub(&quot;chr[[:digit:]]+.&quot;, &quot;&quot;, rownames(promoters))
+promoters &lt;- makeGRangesFromDataFrame(promoters, keep.extra.columns = T)
+promoters &lt;- promoters[!is.na(promoters$symbol)]
+
+overlaps &lt;- findOverlaps(meth_data, promoters, select=&quot;all&quot;)
+overlaps &lt;- overlaps[!duplicated(queryHits(overlaps)),]
+
+meth_data$gene &lt;- NA
+meth_data$gene[queryHits(overlaps)] &lt;- promoters$symbol[subjectHits(overlaps)]
+meth_data &lt;- meth_data[!is.na(meth_data$gene),]
+gene_average &lt;- aggregate(meth_data, as.matrix(mcols(meth_data)[grep(&quot;TCGA&quot;, colnames(mcols(meth_data)))]) ~ gene, mean)
+
+
+#summarized_regions &lt;- list()
+
+#for (i in unique(subjectHits(overlaps))){
+#  summarized_regions[[i]] &lt;- cbind(as.data.frame(sites[i,]), t(as.data.frame(apply(mcols(meth_data)[queryHits(overlaps)[subjectHits(overlaps)==i],], 2, mean))))
+#}
+
+#summarized_regions &lt;- do.call(rbind.data.frame, summarized_regions)
+
+
+
+
+
+
+
+prop &lt;- getProportions(medecom.set, lambda=0.0001, K=7)
+colnames(prop) &lt;- colnames(meth.data)
+
+
+gene_average &lt;- gene_average %&gt;%
+  as.data.frame() %&gt;%
+  &quot;[&lt;-&quot;(paste0(&quot;LMC&quot;, 1:7), value = NA_real_) %&gt;%
+  &quot;[&lt;-&quot;(paste0(&quot;LMC&quot;, 1:7, &quot;_p&quot;), value = NA_real_)
+
+
+for (LMCs in paste0(&quot;LMC&quot;, 1:7)){
+cat(LMCs)
+  est &lt;-lapply(1:nrow(gene_average), function(x)
+    cor.test(prop[LMCs,],  as.numeric(gene_average[x,grep(&quot;TCGA&quot;, colnames(gene_average))]), method = &quot;pears&quot;))
+  gene_average[,LMCs] &lt;- unlist(lapply(est, function(x) x$estimate))
+  gene_average[,paste0(LMCs, &quot;_p&quot;)] &lt;- -log10(unlist(lapply(est, function(x) x$p.value)))
+
+}
+
+df &lt;- gene_average[!is.na(gene_average$gene),]
+
+saveRDS(df, file=paste0(DATA, &quot;gsea_tcga_ranks.RDS&quot;))</code></pre>
+<pre class="r"><code>df &lt;- readRDS(file=paste0(DATA, &quot;gsea_tcga_ranks.RDS&quot;))
+
+
+
+human_lung_cell_atlas_all_markers &lt;- read.delim(&quot;V:/Reka/33_CoO_lung/CoO_Lung_Cancer/data/human_lung_cell_atlas_all_markers.txt&quot;)
+new_list &lt;- lapply(human_lung_cell_atlas_all_markers, function(x) x[x %in% df$gene])
+names(new_list) &lt;- colnames(human_lung_cell_atlas_all_markers)
+
+
+p &lt;- list()
+fgseaRes &lt;- list()
+
+for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
+
+
+  #cat(&quot;Investigating &quot;, lmcs, &quot; \n&quot;)
+
+  gsea_rank &lt;-  df %&gt;%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, &quot;_p&quot;)))) %&gt;%
+    mutate(gene=replace(gene, duplicated(gene), NA))%&gt;%
+    dplyr::filter(!is.na(gene)) %&gt;%
+    arrange(get(lmcs))
+
+  rank &lt;- gsea_rank[,lmcs]
+  names(rank) &lt;- gsea_rank$gene
+
+    gsdata2 &lt;- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+
+    fgseaRes[[lmcs]] &lt;- fgsea(pathways = new_list,
+                      stats    = rank,
+                      minSize  = 3,
+                      maxSize  = 1000, nperm=1000)
+
+   # fgseaRes[[lmcs]]$pathway &lt;- factor(fgseaRes[[lmcs]]$pathway, levels = paste0(&quot;Cluster.&quot;, 1:14))
+    gsdata3 &lt;- gsdata2 %&gt;%
+      inner_join(fgseaRes[[lmcs]][,c(&quot;pathway&quot;, &quot;pval&quot;)], by= c(&quot;Description&quot;=&quot;pathway&quot;)) %&gt;%
+      mutate(significant=ifelse(pval&lt;0.05, &quot; *&quot;, NA)) %&gt;%
+      mutate(Description=factor(Description, levels = fgseaRes[[lmcs]]$pathway[order(fgseaRes[[lmcs]]$ES, decreasing = T)]))
+
+    p[[lmcs]] &lt;- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low=&quot;darkred&quot;, mid=&quot;white&quot;, high=&quot;darkblue&quot;)+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  
+    
+# gsea_plot &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = &quot;line&quot;,
+#                        title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+ 
+# gsea_plot &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = &quot;line&quot;,
+#                        title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+ 
+ #i &lt;- i+1
+
+}</code></pre>
+<pre><code></code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.
+
+Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre class="r"><code>#own_markers &lt;- read.delim(paste0(DATA, &quot;cluster_markers_gsea.txt&quot;))
+#new_list &lt;- lapply(own_markers, convertMouseGeneList)
+
+#saveRDS(new_list, paste0(DATA, &quot;cluster_markers_gsea_human.RDS&quot;))
+new_list &lt;- readRDS(paste0(DATA, &quot;cluster_markers_gsea_human.RDS&quot;))
+
+new_list &lt;- lapply(new_list, function(x) x[x %in% df$gene])
+#names(new_list) &lt;- colnames(own_markers)
+gsea_plot &lt;- list()
+
+for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
+  
+  
+  #cat(&quot;Investigating &quot;, lmcs, &quot; \n&quot;)
+  
+  gsea_rank &lt;-  df %&gt;%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, &quot;_p&quot;)))) %&gt;%
+    mutate(gene=replace(gene, duplicated(gene), NA))%&gt;%
+    dplyr::filter(!is.na(gene)) %&gt;%
+    arrange(get(lmcs))
+  
+  rank &lt;- gsea_rank[,lmcs]
+  names(rank) &lt;- gsea_rank$gene
+  
+  
+  gsdata2 &lt;- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+  
+  fgseaRes_clust &lt;- fgsea(pathways = new_list,
+                    stats    = rank,
+                    minSize  = 3,
+                    maxSize  = 1000, nperm=1000)
+  
+  gsdata3 &lt;- gsdata2 %&gt;%
+    inner_join(fgseaRes_clust[,c(&quot;pathway&quot;, &quot;pval&quot;)], by= c(&quot;Description&quot;=&quot;pathway&quot;)) %&gt;%
+    mutate(significant=ifelse(pval&lt;0.05, &quot; *&quot;, NA)) %&gt;%
+    mutate(Description=factor(Description, levels = fgseaRes_clust$pathway[order(fgseaRes_clust$ES, decreasing = T)]))
+  
+ # p &lt;- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low=&quot;darkred&quot;, mid=&quot;white&quot;, high=&quot;darkblue&quot;)+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  #print(p)
+#  gsea_plot &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = &quot;line&quot;,
+                    #     title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+fgseaRes_clust$pathway &lt;- factor(fgseaRes_clust$pathway, levels = paste0(&quot;Cluster.&quot;, 1:14))
+  gsea_plot[[lmcs]] &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = &quot;line&quot;,title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes_clust)
+ # ggsave(gsea_plot, filename=paste0(DATA_WGBS, &quot;../output/tcga_gsea_plot_&quot;, lmcs,  &quot;_p_clust.png&quot;),
+ #        width = 12, height = 10)
+  #i &lt;- i+1
+  
+}</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre class="r"><code>#tammela_markers &lt;- read.delim(paste0(DATA, &quot;cluster_markers_tammela_paper.txt&quot;))
+#new_list &lt;- lapply(tammela_markers, convertMouseGeneList)
+
+#saveRDS(new_list, paste0(DATA, &quot;cluster_markers_tammela_human.RDS&quot;))
+new_list &lt;- readRDS(paste0(DATA, &quot;cluster_markers_tammela_human.RDS&quot;))
+
+new_list &lt;- lapply(new_list, function(x) x[x %in% df$gene])
+#names(new_list) &lt;- colnames(own_markers)
+tammela_plot &lt;- list()
+
+for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
+  
+  
+  #cat(&quot;Investigating &quot;, lmcs, &quot; \n&quot;)
+  
+  gsea_rank &lt;-  df %&gt;%
+    arrange(desc(abs(get(lmcs))),desc(get(paste0(lmcs, &quot;_p&quot;)))) %&gt;%
+    mutate(gene=replace(gene, duplicated(gene), NA))%&gt;%
+    dplyr::filter(!is.na(gene)) %&gt;%
+    arrange(get(lmcs))
+  
+  rank &lt;- gsea_rank[,lmcs]
+  names(rank) &lt;- gsea_rank$gene
+  
+  
+  gsdata2 &lt;- do.call(rbind, lapply(1:length(new_list), function(id) gsInfo2(geneSetID=id, geneset = new_list, res = rank)))
+  
+  fgseaRes_clust &lt;- fgsea(pathways = new_list,
+                    stats    = rank,
+                    minSize  = 3,
+                    maxSize  = 1000, nperm=1000)
+  fgseaRes_clust$pathway &lt;- factor(fgseaRes_clust$pathway, levels = paste0(&quot;Cluster.&quot;, 1:12))
+
+  gsdata3 &lt;- gsdata2 %&gt;%
+    inner_join(fgseaRes_clust[,c(&quot;pathway&quot;, &quot;pval&quot;)], by= c(&quot;Description&quot;=&quot;pathway&quot;)) %&gt;%
+    mutate(significant=ifelse(pval&lt;0.05, &quot; *&quot;, NA)) %&gt;%
+    mutate(Description=factor(Description, levels = fgseaRes_clust$pathway[order(fgseaRes_clust$ES, decreasing = T)]))
+  
+ # p &lt;- ggplot(gsdata3)+geom_tile(aes(Description, factor(x), fill=runningScore)) +scale_fill_gradient2(low=&quot;darkred&quot;, mid=&quot;white&quot;, high=&quot;darkblue&quot;)+theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y=element_text())+ coord_flip()
+  #print(p)
+#  gsea_plot &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = FALSE, ES_geom = &quot;line&quot;,
+                    #     title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes)
+
+  tammela_plot[[lmcs]] &lt;- gseaplot2(geneSetID = c(1:length(new_list)),  base_size = 11, rel_heights = c(1.5, 0.8), subplots = c(1, 3),  pvalue_table = T, ES_geom = &quot;line&quot;,title = paste(lmcs, &quot; correlation&quot;), ranks = rank, geneSet = new_list, pvaluetable = fgseaRes_clust)
+ # ggsave(gsea_plot, filename=paste0(DATA_WGBS, &quot;../output/tcga_gsea_plot_&quot;, lmcs,  &quot;_p_clust.png&quot;),
+ #        width = 12, height = 10)
+  #i &lt;- i+1
+  
+}</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
+= 1000, : You are trying to run fgseaSimple. It is recommended to use
+fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
+in the fgsea function call.</code></pre>
+<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
+replace the existing scale.</code></pre>
+<div id="plots-by-lmcs" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Plots by LMCs</h1>
+<pre class="r"><code>for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
+
+    cat(&quot;\n&quot;)
+  cat(&quot;## LMC: &quot;,
+      lmcs,
+      &quot;\n&quot;)
+  print(knitr::kable(fgseaRes[[lmcs]][fgseaRes[[lmcs]]$pval&lt;0.05,1:3]))
+   cat(&quot;\n&quot;)
+print(p[[lmcs]])
+
+  
+   cat(&quot;\n&quot;)
+   cat(&quot;Markers from own paper&quot;)
+  print(gsea_plot[[lmcs]])
+   cat(&quot;\n&quot;)
+   cat(&quot;Markers from the Tammela paper&quot;)
+     print(tammela_plot[[lmcs]])
+   cat(&quot;\n&quot;)
+print(ggplot() + theme_void())
+ cat(&quot;\n&quot;)
+}  </code></pre>
+<div id="lmc-lmc1" class="section level2">
+<h2>LMC: LMC1</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Goblet</td>
+<td align="right">0.0234949</td>
+<td align="right">0.5337423</td>
+</tr>
+<tr class="even">
+<td align="left">Mucous</td>
+<td align="right">0.0461538</td>
+<td align="right">0.5353846</td>
+</tr>
+<tr class="odd">
+<td align="left">Airway.Smooth.Muscle</td>
+<td align="right">0.0266272</td>
+<td align="right">0.5337423</td>
+</tr>
+<tr class="even">
+<td align="left">Vascular.Smooth.Muscle</td>
+<td align="right">0.0280374</td>
+<td align="right">0.5337423</td>
+</tr>
+<tr class="odd">
+<td align="left">Myeloid.Dendritic.Type.2</td>
+<td align="right">0.0368098</td>
+<td align="right">0.5337423</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc2" class="section level2">
+<h2>LMC: LMC2</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Club</td>
+<td align="right">0.0494350</td>
+<td align="right">0.1792020</td>
+</tr>
+<tr class="even">
+<td align="left">Basal</td>
+<td align="right">0.0247593</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="odd">
+<td align="left">Differentiating.Basal</td>
+<td align="right">0.0261708</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="even">
+<td align="left">Goblet</td>
+<td align="right">0.0289256</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="odd">
+<td align="left">Ionocyte</td>
+<td align="right">0.0300136</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="even">
+<td align="left">Alveolar.Epithelial.Type.1</td>
+<td align="right">0.0288858</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="odd">
+<td align="left">Alveolar.Epithelial.Type.2</td>
+<td align="right">0.0014164</td>
+<td align="right">0.0813464</td>
+</tr>
+<tr class="even">
+<td align="left">Signaling.Alveolar.Epithelial.Type.2</td>
+<td align="right">0.0252454</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="odd">
+<td align="left">Capillary.Aerocyte</td>
+<td align="right">0.0137741</td>
+<td align="right">0.1141283</td>
+</tr>
+<tr class="even">
+<td align="left">Capillary.Intermediate.1</td>
+<td align="right">0.0169492</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="odd">
+<td align="left">B</td>
+<td align="right">0.0068027</td>
+<td align="right">0.0986395</td>
+</tr>
+<tr class="even">
+<td align="left">CD8..Naive.T</td>
+<td align="right">0.0033784</td>
+<td align="right">0.0813464</td>
+</tr>
+<tr class="odd">
+<td align="left">Natural.Killer.T</td>
+<td align="right">0.0243056</td>
+<td align="right">0.1160528</td>
+</tr>
+<tr class="even">
+<td align="left">Myeloid.Dendritic.Type.2</td>
+<td align="right">0.0136054</td>
+<td align="right">0.1141283</td>
+</tr>
+<tr class="odd">
+<td align="left">TREM2..Dendritic</td>
+<td align="right">0.0042076</td>
+<td align="right">0.0813464</td>
+</tr>
+<tr class="even">
+<td align="left">Intermediate.Monocyte</td>
+<td align="right">0.0105263</td>
+<td align="right">0.1141283</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-5.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-6.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-7.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-8.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc3" class="section level2">
+<h2>LMC: LMC3</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Alveolar.Epithelial.Type.1</td>
+<td align="right">0.0201729</td>
+<td align="right">0.1198347</td>
+</tr>
+<tr class="even">
+<td align="left">B</td>
+<td align="right">0.0032468</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="odd">
+<td align="left">Plasma</td>
+<td align="right">0.0129870</td>
+<td align="right">0.0941558</td>
+</tr>
+<tr class="even">
+<td align="left">CD8..Memory.Effector.T</td>
+<td align="right">0.0032468</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="odd">
+<td align="left">CD8..Naive.T</td>
+<td align="right">0.0030864</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="even">
+<td align="left">CD4..Memory.Effector.T</td>
+<td align="right">0.0032468</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="odd">
+<td align="left">Natural.Killer.T</td>
+<td align="right">0.0031949</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="even">
+<td align="left">Natural.Killer</td>
+<td align="right">0.0064935</td>
+<td align="right">0.0538033</td>
+</tr>
+<tr class="odd">
+<td align="left">Basophil.Mast.2</td>
+<td align="right">0.0491803</td>
+<td align="right">0.2377049</td>
+</tr>
+<tr class="even">
+<td align="left">Platelet.Megakaryocyte</td>
+<td align="right">0.0032787</td>
+<td align="right">0.0316940</td>
+</tr>
+<tr class="odd">
+<td align="left">Myeloid.Dendritic.Type.2</td>
+<td align="right">0.0227273</td>
+<td align="right">0.1198347</td>
+</tr>
+<tr class="even">
+<td align="left">Intermediate.Monocyte</td>
+<td align="right">0.0227273</td>
+<td align="right">0.1198347</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-9.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-10.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-11.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-12.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc4" class="section level2">
+<h2>LMC: LMC4</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Club</td>
+<td align="right">0.0043541</td>
+<td align="right">0.0507289</td>
+</tr>
+<tr class="even">
+<td align="left">Basal</td>
+<td align="right">0.0468085</td>
+<td align="right">0.2500000</td>
+</tr>
+<tr class="odd">
+<td align="left">Ionocyte</td>
+<td align="right">0.0013986</td>
+<td align="right">0.0424597</td>
+</tr>
+<tr class="even">
+<td align="left">Neuroendocrine</td>
+<td align="right">0.0033670</td>
+<td align="right">0.0507289</td>
+</tr>
+<tr class="odd">
+<td align="left">Alveolar.Epithelial.Type.2</td>
+<td align="right">0.0190337</td>
+<td align="right">0.1577076</td>
+</tr>
+<tr class="even">
+<td align="left">Signaling.Alveolar.Epithelial.Type.2</td>
+<td align="right">0.0043732</td>
+<td align="right">0.0507289</td>
+</tr>
+<tr class="odd">
+<td align="left">Vein</td>
+<td align="right">0.0387931</td>
+<td align="right">0.2500000</td>
+</tr>
+<tr class="even">
+<td align="left">Capillary.Aerocyte</td>
+<td align="right">0.0190058</td>
+<td align="right">0.1577076</td>
+</tr>
+<tr class="odd">
+<td align="left">Adventitial.Fibroblast</td>
+<td align="right">0.0014641</td>
+<td align="right">0.0424597</td>
+</tr>
+<tr class="even">
+<td align="left">Plasma</td>
+<td align="right">0.0474138</td>
+<td align="right">0.2500000</td>
+</tr>
+<tr class="odd">
+<td align="left">Intermediate.Monocyte</td>
+<td align="right">0.0261438</td>
+<td align="right">0.1895425</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-13.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-14.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-15.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-16.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc5" class="section level2">
+<h2>LMC: LMC5</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Proximal.Basal</td>
+<td align="right">0.0364683</td>
+<td align="right">0.2946834</td>
+</tr>
+<tr class="even">
+<td align="left">Differentiating.Basal</td>
+<td align="right">0.0019417</td>
+<td align="right">0.0602911</td>
+</tr>
+<tr class="odd">
+<td align="left">Neuroendocrine</td>
+<td align="right">0.0020790</td>
+<td align="right">0.0602911</td>
+</tr>
+<tr class="even">
+<td align="left">Artery</td>
+<td align="right">0.0161290</td>
+<td align="right">0.1870968</td>
+</tr>
+<tr class="odd">
+<td align="left">Lymphatic</td>
+<td align="right">0.0041068</td>
+<td align="right">0.0793977</td>
+</tr>
+<tr class="even">
+<td align="left">Pericyte</td>
+<td align="right">0.0141129</td>
+<td align="right">0.1870968</td>
+</tr>
+<tr class="odd">
+<td align="left">CD8..Memory.Effector.T</td>
+<td align="right">0.0499040</td>
+<td align="right">0.2946834</td>
+</tr>
+<tr class="even">
+<td align="left">CD8..Naive.T</td>
+<td align="right">0.0395257</td>
+<td align="right">0.2946834</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-17.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-18.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-19.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-20.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc6" class="section level2">
+<h2>LMC: LMC6</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Club</td>
+<td align="right">0.0437828</td>
+<td align="right">0.2539405</td>
+</tr>
+<tr class="even">
+<td align="left">Differentiating.Basal</td>
+<td align="right">0.0017730</td>
+<td align="right">0.0441400</td>
+</tr>
+<tr class="odd">
+<td align="left">Proliferating.Basal</td>
+<td align="right">0.0141844</td>
+<td align="right">0.1175279</td>
+</tr>
+<tr class="even">
+<td align="left">Neuroendocrine</td>
+<td align="right">0.0022831</td>
+<td align="right">0.0441400</td>
+</tr>
+<tr class="odd">
+<td align="left">Artery</td>
+<td align="right">0.0113122</td>
+<td align="right">0.1175279</td>
+</tr>
+<tr class="even">
+<td align="left">Bronchial.Vessel.1</td>
+<td align="right">0.0350263</td>
+<td align="right">0.2257248</td>
+</tr>
+<tr class="odd">
+<td align="left">Lymphatic</td>
+<td align="right">0.0068493</td>
+<td align="right">0.0993151</td>
+</tr>
+<tr class="even">
+<td align="left">Pericyte</td>
+<td align="right">0.0022624</td>
+<td align="right">0.0441400</td>
+</tr>
+<tr class="odd">
+<td align="left">Mesothelial</td>
+<td align="right">0.0300231</td>
+<td align="right">0.2176674</td>
+</tr>
+<tr class="even">
+<td align="left">Proliferating.Macrophage</td>
+<td align="right">0.0141844</td>
+<td align="right">0.1175279</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-21.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-22.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-23.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-24.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="lmc-lmc7" class="section level2">
+<h2>LMC: LMC7</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pathway</th>
+<th align="right">pval</th>
+<th align="right">padj</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Proximal.Ciliated</td>
+<td align="right">0.0235690</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="even">
+<td align="left">Serous</td>
+<td align="right">0.0024691</td>
+<td align="right">0.0716049</td>
+</tr>
+<tr class="odd">
+<td align="left">Alveolar.Epithelial.Type.2</td>
+<td align="right">0.0135593</td>
+<td align="right">0.1123487</td>
+</tr>
+<tr class="even">
+<td align="left">Artery</td>
+<td align="right">0.0067797</td>
+<td align="right">0.0876574</td>
+</tr>
+<tr class="odd">
+<td align="left">Capillary.Aerocyte</td>
+<td align="right">0.0420875</td>
+<td align="right">0.1407767</td>
+</tr>
+<tr class="even">
+<td align="left">Capillary</td>
+<td align="right">0.0348837</td>
+<td align="right">0.1348837</td>
+</tr>
+<tr class="odd">
+<td align="left">Capillary.Intermediate.1</td>
+<td align="right">0.0132231</td>
+<td align="right">0.1123487</td>
+</tr>
+<tr class="even">
+<td align="left">Lymphatic</td>
+<td align="right">0.0202020</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="odd">
+<td align="left">Vascular.Smooth.Muscle</td>
+<td align="right">0.0252525</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="even">
+<td align="left">Fibromyocyte</td>
+<td align="right">0.0168350</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="odd">
+<td align="left">Pericyte</td>
+<td align="right">0.0016949</td>
+<td align="right">0.0716049</td>
+</tr>
+<tr class="even">
+<td align="left">B</td>
+<td align="right">0.0277078</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="odd">
+<td align="left">CD8..Naive.T</td>
+<td align="right">0.0412621</td>
+<td align="right">0.1407767</td>
+</tr>
+<tr class="even">
+<td align="left">Proliferating.NK.T</td>
+<td align="right">0.0283333</td>
+<td align="right">0.1173810</td>
+</tr>
+<tr class="odd">
+<td align="left">Myeloid.Dendritic.Type.2</td>
+<td align="right">0.0075567</td>
+<td align="right">0.0876574</td>
+</tr>
+<tr class="even">
+<td align="left">IGSF21..Dendritic</td>
+<td align="right">0.0050000</td>
+<td align="right">0.0876574</td>
+</tr>
+<tr class="odd">
+<td align="left">Nonclassical.Monocyte</td>
+<td align="right">0.0436893</td>
+<td align="right">0.1407767</td>
+</tr>
+<tr class="even">
+<td align="left">Intermediate.Monocyte</td>
+<td align="right">0.0250000</td>
+<td align="right">0.1173810</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-25.png" width="672" style="display: block; margin: auto;" /> Markers from own paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-26.png" width="672" style="display: block; margin: auto;" /> Markers from the Tammela paper<img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-27.png" width="672" style="display: block; margin: auto;" /> <img src="figure/tcga_gsea.Rmd/unnamed-chunk-5-28.png" width="672" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.1.0 (2021-05-18)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 18363)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+ [1] grid      stats4    parallel  stats     graphics  grDevices utils    
+ [8] datasets  methods   base     
+
+other attached packages:
+ [1] ggpmisc_0.4.0                          
+ [2] ggpp_0.4.0                             
+ [3] biomaRt_2.48.1                         
+ [4] cowplot_1.1.1                          
+ [5] fgsea_1.18.0                           
+ [6] ggsci_2.9                              
+ [7] dplyr_1.0.7                            
+ [8] Hmisc_4.5-0                            
+ [9] Formula_1.2-4                          
+[10] survival_3.2-11                        
+[11] lattice_0.20-44                        
+[12] TCGAbiolinks_2.20.0                    
+[13] MeDeCom_1.0.0                          
+[14] RnBeads_2.10.0                         
+[15] plyr_1.8.6                             
+[16] methylumi_2.38.0                       
+[17] minfi_1.38.0                           
+[18] bumphunter_1.34.0                      
+[19] locfit_1.5-9.4                         
+[20] iterators_1.0.13                       
+[21] foreach_1.5.1                          
+[22] Biostrings_2.60.1                      
+[23] XVector_0.32.0                         
+[24] SummarizedExperiment_1.22.0            
+[25] MatrixGenerics_1.4.0                   
+[26] FDb.InfiniumMethylation.hg19_2.2.0     
+[27] org.Hs.eg.db_3.13.0                    
+[28] TxDb.Hsapiens.UCSC.hg19.knownGene_3.2.2
+[29] GenomicFeatures_1.44.0                 
+[30] AnnotationDbi_1.54.1                   
+[31] reshape2_1.4.4                         
+[32] scales_1.1.1                           
+[33] Biobase_2.52.0                         
+[34] illuminaio_0.34.0                      
+[35] matrixStats_0.59.0                     
+[36] limma_3.48.0                           
+[37] gridExtra_2.3                          
+[38] ggplot2_3.3.4                          
+[39] fields_12.3                            
+[40] viridis_0.6.1                          
+[41] viridisLite_0.4.0                      
+[42] spam_2.6-0                             
+[43] dotCall64_1.0-1                        
+[44] ff_4.0.4                               
+[45] bit_4.0.4                              
+[46] cluster_2.1.2                          
+[47] MASS_7.3-54                            
+[48] GenomicRanges_1.44.0                   
+[49] GenomeInfoDb_1.28.0                    
+[50] IRanges_2.26.0                         
+[51] S4Vectors_0.30.0                       
+[52] BiocGenerics_0.38.0                    
+[53] RUnit_0.4.32                           
+[54] gplots_3.1.1                           
+[55] gtools_3.9.2                           
+[56] pracma_2.3.3                           
+[57] Rcpp_1.0.6                             
+[58] workflowr_1.6.2.9000                   
+
+loaded via a namespace (and not attached):
+  [1] rappdirs_0.3.3              SparseM_1.81               
+  [3] rtracklayer_1.52.0          R.methodsS3_1.8.1          
+  [5] tidyr_1.1.3                 bit64_4.0.5                
+  [7] knitr_1.33                  DelayedArray_0.18.0        
+  [9] R.utils_2.10.1              data.table_1.14.0          
+ [11] rpart_4.1-15                KEGGREST_1.32.0            
+ [13] RCurl_1.98-1.3              GEOquery_2.60.0            
+ [15] generics_0.1.0              preprocessCore_1.54.0      
+ [17] callr_3.7.0                 RSQLite_2.2.7              
+ [19] xml2_1.3.2                  httpuv_1.6.1               
+ [21] assertthat_0.2.1            xfun_0.24                  
+ [23] hms_1.1.0                   jquerylib_0.1.4            
+ [25] evaluate_0.14               promises_1.2.0.1           
+ [27] fansi_0.5.0                 restfulr_0.0.13            
+ [29] scrime_1.3.5                progress_1.2.2             
+ [31] caTools_1.18.2              dbplyr_2.1.1               
+ [33] DBI_1.1.1                   htmlwidgets_1.5.3          
+ [35] reshape_0.8.8               purrr_0.3.4                
+ [37] ellipsis_0.3.2              backports_1.2.1            
+ [39] annotate_1.70.0             sparseMatrixStats_1.4.0    
+ [41] vctrs_0.3.8                 quantreg_5.86              
+ [43] cachem_1.0.5                withr_2.4.2                
+ [45] checkmate_2.0.0             GenomicAlignments_1.28.0   
+ [47] prettyunits_1.1.1           mclust_5.4.7               
+ [49] DOSE_3.18.0                 crayon_1.4.1               
+ [51] genefilter_1.74.0           labeling_0.4.2             
+ [53] pkgconfig_2.0.3             nlme_3.1-152               
+ [55] nnet_7.3-16                 rlang_0.4.11               
+ [57] lifecycle_1.0.0             MatrixModels_0.5-0         
+ [59] downloader_0.4              filelock_1.0.2             
+ [61] BiocFileCache_2.0.0         rprojroot_2.0.2            
+ [63] rngtools_1.5                base64_2.0                 
+ [65] Matrix_1.3-4                Rhdf5lib_1.14.1            
+ [67] base64enc_0.1-3             whisker_0.4                
+ [69] processx_3.5.2              png_0.1-7                  
+ [71] rjson_0.2.20                bitops_1.0-7               
+ [73] getPass_0.2-2               R.oo_1.24.0                
+ [75] KernSmooth_2.23-20          rhdf5filters_1.4.0         
+ [77] blob_1.2.1                  DelayedMatrixStats_1.14.0  
+ [79] doRNG_1.8.2                 qvalue_2.24.0              
+ [81] stringr_1.4.0               nor1mix_1.3-0              
+ [83] readr_1.4.0                 jpeg_0.1-8.1               
+ [85] memoise_2.0.0               magrittr_2.0.1             
+ [87] zlibbioc_1.38.0             compiler_4.1.0             
+ [89] BiocIO_1.2.0                RColorBrewer_1.1-2         
+ [91] Rsamtools_2.8.0             ps_1.6.0                   
+ [93] htmlTable_2.2.1             tidyselect_1.1.1           
+ [95] stringi_1.6.2               TCGAbiolinksGUI.data_1.12.0
+ [97] highr_0.9                   GOSemSim_2.18.0            
+ [99] yaml_2.2.1                  askpass_1.1                
+[101] latticeExtra_0.6-29         sass_0.4.0                 
+[103] fastmatch_1.1-0             tools_4.1.0                
+[105] rstudioapi_0.13             foreign_0.8-81             
+[107] git2r_0.28.0                farver_2.1.0               
+[109] digest_0.6.27               quadprog_1.5-8             
+[111] siggenes_1.66.0             later_1.2.0                
+[113] httr_1.4.2                  colorspace_2.0-1           
+[115] rvest_1.0.0                 XML_3.99-0.6               
+[117] fs_1.5.0                    splines_4.1.0              
+[119] conquer_1.0.2               multtest_2.48.0            
+[121] xtable_1.8-4                jsonlite_1.7.2             
+[123] R6_2.5.0                    pillar_1.6.1               
+[125] htmltools_0.5.1.1           glue_1.4.2                 
+[127] fastmap_1.1.0               BiocParallel_1.26.0        
+[129] beanplot_1.2                codetools_0.2-18           
+[131] maps_3.3.0                  utf8_1.2.1                 
+[133] bslib_0.2.5.1               tibble_3.1.2               
+[135] curl_4.3.2                  GO.db_3.13.0               
+[137] openssl_1.4.4               rmarkdown_2.9              
+[139] munsell_0.5.0               DO.db_2.9                  
+[141] rhdf5_2.36.0                GenomeInfoDbData_1.2.6     
+[143] HDF5Array_1.20.0            gtable_0.3.0               </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
