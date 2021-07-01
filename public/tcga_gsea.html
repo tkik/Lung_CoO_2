@@ -30,10 +30,8 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -231,70 +229,10 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
-
-
-
 <style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-@media print {
-.toc-content {
-  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
-  float: right;
-}
-}
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-
+.code-folding-btn { margin-bottom: 4px; }
 </style>
+
 
 
 
@@ -304,16 +242,6 @@ div.tocify {
 
 
 <div class="container-fluid main-container">
-
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -354,6 +282,14 @@ div.tocify {
 </div><!--/.navbar -->
 
 <div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
 
@@ -499,16 +435,16 @@ data/human_lung_cell_atlas_all_markers.txt
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree5214af3142c57c2ea9dc55304671195a65ee0405targetblank5214af3a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/5214af3142c57c2ea9dc55304671195a65ee0405" target="_blank">5214af3</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree8b2f961ba2684945df887ac53c557c229a1bdae5targetblank8b2f961a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://gitlab.com/tkike/Lung_CoO/tree/8b2f961ba2684945df887ac53c557c229a1bdae5" target="_blank">8b2f961</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree5214af3142c57c2ea9dc55304671195a65ee0405targetblank5214af3a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgitlabcomtkikeLungCoOtree8b2f961ba2684945df887ac53c557c229a1bdae5targetblank8b2f961a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/5214af3142c57c2ea9dc55304671195a65ee0405" target="_blank">5214af3</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+The results in this page were generated with repository version <a href="https://gitlab.com/tkike/Lung_CoO/tree/8b2f961ba2684945df887ac53c557c229a1bdae5" target="_blank">8b2f961</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
 </p>
 <p>
 Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -518,6 +454,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.Rhistory
+    Ignored:    analysis/figure/
     Ignored:    data/DML_results_MsCCSP_MsSPC_comparison.RDS
     Ignored:    data/DML_results_MsCCSP_MsSPC_control_comparison.RDS
     Ignored:    data/DML_results_MsCCSP_tumor_control_comparison.RDS
@@ -971,7 +908,6 @@ Unstaged changes:
     Modified:   analysis/MeDeCom_results.Rmd
     Modified:   analysis/_site.yml
     Modified:   analysis/homer_new_groups.Rmd
-    Modified:   analysis/index.Rmd
     Modified:   code/MeDeCom_poised_enhancers.R
     Modified:   code/QC_report.Rmd
     Modified:   code/gviz_region_plot.R
@@ -1016,6 +952,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://gitlab.com/tkike/Lung_CoO/blob/8b2f961ba2684945df887ac53c557c229a1bdae5/analysis/tcga_gsea.Rmd" target="_blank">8b2f961</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-07-01
+</td>
+<td>
+wflow_publish(c(“analysis/tcga_gsea.Rmd”, “analysis/index.Rmd”))
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://glcdn.githack.com/tkike/Lung_CoO/raw/b867fee97c7b2400b827911879939ae3463b32db/public/tcga_gsea.html" target="_blank">b867fee</a>
+</td>
+<td>
+tkike
+</td>
+<td>
+2021-07-01
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1156,41 +1126,6 @@ for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
  #i &lt;- i+1
 
 }</code></pre>
-<pre><code></code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.
-
-Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
 <pre class="r"><code>#own_markers &lt;- read.delim(paste0(DATA, &quot;cluster_markers_gsea.txt&quot;))
 #new_list &lt;- lapply(own_markers, convertMouseGeneList)
 
@@ -1239,48 +1174,6 @@ fgseaRes_clust$pathway &lt;- factor(fgseaRes_clust$pathway, levels = paste0(&quo
   #i &lt;- i+1
   
 }</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
 <pre class="r"><code>#tammela_markers &lt;- read.delim(paste0(DATA, &quot;cluster_markers_tammela_paper.txt&quot;))
 #new_list &lt;- lapply(tammela_markers, convertMouseGeneList)
 
@@ -1330,48 +1223,6 @@ for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
   #i &lt;- i+1
   
 }</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
-<pre><code>Warning in fgsea(pathways = new_list, stats = rank, minSize = 3, maxSize
-= 1000, : You are trying to run fgseaSimple. It is recommended to use
-fgseaMultilevel. To run fgseaMultilevel, you need to remove the nperm argument
-in the fgsea function call.</code></pre>
-<pre><code>Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which will
-replace the existing scale.</code></pre>
 <div id="plots-by-lmcs" class="section level1 tabset tabset-fade tabset-pills">
 <h1 class="tabset tabset-fade tabset-pills">Plots by LMCs</h1>
 <pre class="r"><code>for (lmcs in paste0(&quot;LMC&quot;, 1:7)){
@@ -2077,8 +1928,6 @@ footer is added to webpages before the MathJax javascript. -->
 
 
 
-</div>
-</div>
 
 </div>
 
@@ -2110,36 +1959,12 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
-
 <script>
-$(document).ready(function ()  {
-
-    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
-    $('.unlisted.unnumbered').addClass('toc-ignore')
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
 });
 </script>
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
