@@ -12,27 +12,36 @@ editor_options:
 
 ## Reading in and QC
 
-**QC analysis based on data from ODCF** [LINK](QC_report.html)
+**QC analysis based on data from ODCF** [LINK](assets/QC_report.html)
 
 **Data read in** [LINK](01_read_in_MethylDackel.html)
 
-**QC report of the data** [LINK](../output/QC_report/methrix_reports.html)
+**QC report of the data** [LINK](QC_report/methrix_reports.html)
 
-**QC report of the data after SNP removal** [LINK](../output/QC_report_no_SNP/methrix_reports.html)
+**QC report of the data after SNP removal** [LINK](QC_report_no_SNP/methrix_reports.html)
 
 ## General description of the data
 
+General PCA plots on the complete dataset.
+
 **PCA plots** [LINK](PCA_plots.html)
+
+Genomic plots showing the methylation for each candidate marker gene and their promoters. 
 
 **Genomic plots for candidate regions** [LINK](candiate_region_plot_histogram.html)
 
 ## DMR calling
 
+General description of the DMRs, annotation.
+
 **Result of the DMR calling** [LINK](DMR_report.html)
+
+**Result of the DMR calling, selected comparisons** [LINK](DMR_report_selected.html)
+
+Heatmaps based on differentially methylated regions. 
 
 **Heatmaps of DMRs** [LINK](heatmaps.html)
 
-**Enrichment analysis of the DMRs** [LINK](DMR_enrichment.html)
 
 ## MeDeCom analysis
 
@@ -40,14 +49,37 @@ editor_options:
 
 **Site selection for TCA** 
 
-**MeDeCom and TCA run** 
+**MeDeCom results** [LINK](MeDeCom_results.html)
 
-**Candidate plots for the LMCs** 
+**MeDeCom results, no Hopx_control01** [LINK](MeDeCom_results_noHopx.html)
+
+**Candidate plots for the LMCs** [LINK](LMC_promoters.html)
+
+
 
 ## Homer motif enrichment analysis
 
-**Data preparation** 
+### Enhancers
+**Data preparation** [LINK](prepare_homer.html)
 
-**Homer report** 
+**Homer report** [LINK](homer_enhancers.html)
 
+# DNA methylation analysis based on the MeDeCom result
 
+Using the MeDeCom results, tumors were re-categorized according their suspected cells-of-origin. Then, a DMR calling was performed.
+
+**DMR report** [LINK](DMR_report_new_groups.html)
+
+**Enrichment analysis of DMRs** [LINK](DMR_enrichment.html)
+
+**Differentially methylated transcription factor binding** [LINK](homer_new_groups.html)
+
+**Combined visualization of RNASeq and methylation results**  [LINK](combined_differential.html)
+
+**Candidate genes plots** [LINK](candidate_selection.html)
+
+**Candidate pathways and gene sets** [LINK](combined_candidate_plots.html)
+
+**Candidate pathways and gene sets based on enhancer methylation** [LINK](combined_enhancer_plots.html)
+
+**TCGA LMCs - enrichment** [LINK](tcga_gsea.html)
